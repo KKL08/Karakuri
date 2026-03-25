@@ -2,7 +2,7 @@
 
 Plays your 网易云音乐 (NetEase Music) liked songs while you code with Claude Code. Auto-pauses when Claude shows a permission dialog, resumes immediately after you confirm.
 
-[中文文档](./README.zh.md)
+[中文](./README.zh.md)
 
 ## Requirements
 
