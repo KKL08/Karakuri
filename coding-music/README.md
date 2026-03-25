@@ -2,12 +2,14 @@
 
 Plays your 网易云音乐 (NetEase Music) liked songs while you code with Claude Code. Auto-pauses when Claude shows a permission dialog, resumes immediately after you confirm.
 
+[中文文档](./README.zh.md)
+
 ## Requirements
 
 - **ncm-cli** — `npm install -g @music163/ncm-cli` ([npm](https://www.npmjs.com/package/@music163/ncm-cli))
 - [mpv](https://mpv.io) — media player (`brew install mpv`)
 - [jq](https://jqlang.github.io/jq/) — JSON processor (`brew install jq`)
-- Python 3
+- Python 3.8+
 - Node.js >= 18
 
 ## First-time Setup
@@ -24,15 +26,21 @@ ncm-cli configure   # enter your appId and privateKey
 ncm-cli login       # authorize your account
 ```
 
-For more details on ncm-cli skills (setup, CLI operations, music assistant), see [NetEase/skills](https://github.com/NetEase/skills).
+For more details on ncm-cli setup and usage, see [NetEase/skills](https://github.com/NetEase/skills).
 
 ### 3. Install coding-music
 
 ```bash
-git clone https://github.com/KKL08/coding-music-skill
-cd coding-music-skill
+git clone https://github.com/KKL08/Skill.git
+cd Skill/coding-music
 bash scripts/install.sh
 ```
+
+`install.sh` does the following automatically:
+- Copies hook scripts to `~/.claude/hooks/coding-music/`
+- Installs `SKILL.md` to `~/.claude/skills/coding-music/`
+- Registers all hooks in `~/.claude/settings.json`
+- Creates default config and state files
 
 Then restart Claude Code.
 
@@ -64,6 +72,8 @@ Two rules:
 ```bash
 bash scripts/uninstall.sh
 ```
+
+Removes hook scripts, SKILL.md, and all hook registrations from `settings.json`.
 
 ## Config
 

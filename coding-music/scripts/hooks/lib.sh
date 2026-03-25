@@ -1,18 +1,20 @@
 #!/bin/bash
-# coding-music — shared library for hooks
+# coding-music companion - shared library
+# 只负责 Hook 规则（暂停/恢复），不负责启动音乐
 
 HOOK_DIR="$HOME/.claude/hooks/coding-music"
 CONFIG_FILE="$HOOK_DIR/config.json"
 STATE_FILE="$HOOK_DIR/state.json"
 LOG_FILE="$HOOK_DIR/logs/music.log"
 
-# Ensure ncm-cli is in PATH (npm global bin may not be in hook execution environment)
+# 确保 ncm-cli 在 PATH 中（npm global bin 可能不在 hook 执行环境的 PATH 里）
 for p in "$HOME/.npm-global/bin" "$HOME/.nvm/versions/node/"*/bin /usr/local/bin /opt/homebrew/bin; do
   [ -d "$p" ] && export PATH="$p:$PATH"
 done
 
 mkdir -p "$HOOK_DIR/logs"
 
+# ── Logging ──────────────────────────────────
 log() {
   local log_enabled
   log_enabled=$(jq -r '.log_enabled // false' "$CONFIG_FILE" 2>/dev/null)
@@ -21,6 +23,7 @@ log() {
   fi
 }
 
+# ── Config ───────────────────────────────────
 is_enabled() {
   local enabled
   enabled=$(jq -r 'if .enabled == false then "false" else "true" end' "$CONFIG_FILE" 2>/dev/null)
@@ -33,6 +36,7 @@ is_rule2_enabled() {
   [ "$rule2" = "true" ]
 }
 
+# ── State: 只追踪"是否被 hook 暂停" ─────────
 # paused_by: "" | "permission" | "stop"
 get_paused_by() {
   jq -r '.paused_by // ""' "$STATE_FILE" 2>/dev/null
@@ -54,6 +58,7 @@ clear_paused_by() {
   set_paused_by ""
 }
 
+# ── Playback control (thin wrappers) ────────
 pause_music() {
   ncm-cli pause 2>/dev/null
   log "Paused music"
@@ -69,6 +74,7 @@ stop_music() {
   log "Stopped music"
 }
 
+# ── Read hook stdin ──────────────────────────
 read_hook_input() {
   cat
 }

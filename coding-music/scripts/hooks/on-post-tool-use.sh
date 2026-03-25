@@ -5,10 +5,10 @@ is_enabled || exit 0
 INPUT=$(read_hook_input)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
 
-# Skip ncm-cli commands to prevent recursion
+# 排除 ncm-cli 自身命令防递归
 if [ "$TOOL_NAME" = "Bash" ]; then
   COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
-  if echo "$COMMAND" | grep -q "ncm-cli"; then
+  if echo "$COMMAND" | grep -qE "ncm-cli (pause|resume|stop|next|prev|play)"; then
     exit 0
   fi
 fi

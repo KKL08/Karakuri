@@ -4,14 +4,14 @@ is_enabled || exit 0
 
 INPUT=$(read_hook_input)
 
-# Rule 1 fallback: resume if still paused from a permission dialog
+# Rule 1: 权限确认后恢复（不管 rule2 开不开）
 if [ "$(get_paused_by)" = "permission" ]; then
   resume_music
   clear_paused_by
-  log "Stop: resumed after permission confirm (Stop fallback)"
+  log "Stop: resumed after permission confirm"
 fi
 
-# Rule 2: pause when Claude finishes responding
+# Rule 2: Claude 回复完毕暂停
 if is_rule2_enabled; then
   log "Stop event (rule2)"
   pause_music

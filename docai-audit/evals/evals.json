@@ -1,0 +1,23 @@
+{
+  "skill_name": "docai-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我评估一下 Resend 的开发文档 AI 友好度 https://resend.com/docs",
+      "expected_output": "高分（总分 80+，等级 A 或 S）。5 个维度中 AI 可发现性和 AI 工具接入应得 4-5 分：有完整 llms.txt + llms-full.txt + AI onboarding 页、完整 MCP Server + AI Skills 包、OpenAPI spec。代码示例质量高，多语言覆盖。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我想看看 Supabase 的文档对 AI coding 工具的支持程度怎么样 https://supabase.com/docs",
+      "expected_output": "中高分（总分 60-80，等级 B 或 A）。AI 工具接入较强（有 cursorrules、MCP 文档和仓库、完善 CLI），代码示例丰富，但 llms.txt 结构和 API 规范完整度弱于 Resend。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "评估一下腾讯 TRTC 的开发文档 AI 友好度 https://trtc.io/document",
+      "expected_output": "中分（总分 40-65，等级 C 或 B）。有 MCP Server 和 AI Skills 仓库（近期新增），AI 工具接入得分有提升空间。但 llms.txt 缺失、OpenAPI spec 不完整、代码示例质量一般，整体 AI 可发现性和文档规范较弱。",
+      "files": []
+    }
+  ]
+}
