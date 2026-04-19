@@ -28,7 +28,7 @@ Execute the bundled probe script to check for well-known AI resources:
 python3 <skill-path>/scripts/probe.py <base_url>
 ```
 
-This returns JSON with existence data for: `llms_txt`, `openapi`, `mcp_json`, `sitemap`, `robots_txt`, `mint_json`. Each entry has `exists`, `url`, and `content_preview`.
+This returns JSON with existence data for: `llms_txt`, `openapi`, `mcp_json`, `mcp_server_card`, `agent_skills`, `api_catalog`, `sitemap`, `robots_txt`, `mint_json`. Each entry has `exists`, `url`, and `content_preview`. A `response_headers` key contains `link_header` and `markdown_negotiation` signals from the root URL.
 
 **Step 3 — Broad WebSearch**
 
@@ -41,6 +41,7 @@ Search for AI-related content on the target site. Run these searches (adapt the 
 5. `site:<domain> SDK OR CLI OR "code examples" OR quickstart OR "getting started"`
 6. `site:<domain> changelog OR "error handling" OR troubleshooting OR FAQ`
 7. `site:<domain> discord OR community OR feedback OR "rate this page"`
+8. `site:<domain> oauth OR "openid" OR "well-known" OR "api catalog"`
 
 Use WebSearch for these. Collect all discovered page URLs.
 
@@ -55,9 +56,20 @@ Present this to the user in Chinese. Example format:
 ```
 ## 发现清单
 
+### AI 可发现性
 - [x] llms.txt: 存在 (https://docs.example.com/llms.txt)
 - [ ] AI onboarding 专属页面: 未发现
+- [ ] MCP Server Card (/.well-known/mcp/server-card.json): 未发现
+- [ ] Agent Skills index (/.well-known/agent-skills/index.json): 未发现
+- [ ] Link 响应头: 未检测到
+- [ ] Markdown 内容协商 (Accept: text/markdown): 不支持
+- [ ] robots.txt AI 爬虫规则: 未分析（robots.txt 存在，需查看内容）
+
+### API 规范
 - [x] OpenAPI spec: 存在 (https://docs.example.com/openapi.json)
+- [ ] API Catalog (/.well-known/api-catalog): 未发现
+
+### AI 工具集成
 - [ ] MCP Server: 未发现
 - [x] Cursor 集成指南: https://docs.example.com/guides/cursor
 - [x] CLI 工具文档: https://docs.example.com/cli
@@ -193,11 +205,26 @@ Output the full report in Chinese using this exact template:
 1. **<action>** (优先级: P0, 工作量: S/M/L)
    <reason and expected score impact>
 
+   **修复参考：**
+   ```
+   <copy-paste ready implementation instructions or file template>
+   ```
+
 2. **<action>** (优先级: P1, 工作量: S/M/L)
    <reason and expected score impact>
 
+   **修复参考：**
+   ```
+   <copy-paste ready implementation instructions or file template>
+   ```
+
 3. **<action>** (优先级: P1, 工作量: S/M/L)
    <reason and expected score impact>
+
+   **修复参考：**
+   ```
+   <copy-paste ready implementation instructions or file template>
+   ```
 ```
 
 ## Important Notes

@@ -42,15 +42,19 @@
 - llms.txt 文件是否存在（探测脚本数据），格式是否完整（含标题、描述、URL 链接）
 - 是否提供 llms-full.txt 完整版本
 - 是否有专门的 AI onboarding / AI-friendly 入口页面
-- 文档页面是否支持 Markdown/纯文本获取（如 .md 后缀）
+- 文档页面是否支持 Markdown/纯文本获取（如 .md 后缀或 Accept: text/markdown 内容协商）
 - 标题层级结构是否清晰，内容是否便于 AI 解析
+- MCP Server Card 是否存在（`/.well-known/mcp/server-card.json`，探测脚本 `mcp_server_card` 字段）
+- Agent Skills index 是否存在（`/.well-known/agent-skills/index.json`，探测脚本 `agent_skills` 字段）
+- robots.txt 是否包含针对 AI 爬虫的明确规则（如 GPTBot、ClaudeBot、anthropic-ai、PerplexityBot 等的 Allow/Disallow 声明）
+- 根 URL 响应头是否包含 `Link` header（探测脚本 `response_headers.link_header` 字段）
 
 **评分标准：**
-- **5**: llms.txt 存在且格式完整 + llms-full.txt 或等效完整版 + 专属 AI 入口页 + 每页可获取 Markdown 版本
-- **4**: llms.txt 存在且格式完整 + 以上其中 1–2 项缺失（无专属 AI 页或无 Markdown 版本）
-- **3**: llms.txt 存在但格式简陋，或无 llms.txt 但有 AI 入口页 + 良好文档结构
-- **2**: 无 llms.txt，文档结构基本可解析但无 AI 专属设计
-- **1**: 无 llms.txt，无 AI 入口，文档结构混乱难以机器解析
+- **5**: llms.txt 存在且格式完整 + llms-full.txt 或等效完整版 + 专属 AI 入口页 + Markdown 内容协商或 .md 版本 + MCP Server Card 或 Agent Skills index 至少一项
+- **4**: llms.txt 存在且格式完整 + 以上其中 2 项缺失，或 llms.txt 格式完整 + robots.txt 有 AI 爬虫规则 + 良好文档结构
+- **3**: llms.txt 存在但格式简陋，或无 llms.txt 但有 AI 入口页 + robots.txt AI 规则 + 良好文档结构
+- **2**: 无 llms.txt，文档结构基本可解析，robots.txt 有部分 AI 规则但无专属 AI 设计
+- **1**: 无 llms.txt，无 AI 入口，无任何 agent 发现机制，文档结构混乱难以机器解析
 
 ---
 
@@ -105,9 +109,10 @@
 合并自：MCP Server + AI Skills/Prompts + AI Coding 工具兼容性 + 可编程访问性（CLI）
 
 **评估要点：**
-- **MCP Server**：`.well-known/mcp.json` 存在性（探测脚本数据）、MCP 文档和开源仓库、工具覆盖丰富度
+- **MCP Server**：`/.well-known/mcp.json` 或 `/.well-known/mcp/server-card.json` 存在性（探测脚本 `mcp_json` / `mcp_server_card` 字段）、MCP 文档和开源仓库、工具覆盖丰富度
 - **AI Coding 工具支持**：.cursorrules、AGENTS.md、skills 包、针对 Cursor/Claude Code/Copilot/Windsurf/Cline 等的显式配置或使用指南
 - **CLI 可编程访问**：是否有完善的 CLI 工具，可按需调用或获取信息
+- **API 可发现性**（仅 API 类站点）：API Catalog 文件（探测脚本 `api_catalog` 字段）是否存在；OAuth/OIDC 端点（`/.well-known/openid-configuration`）是否可发现；这些是加分项，缺失不主动扣分
 
 **MCP 动态权重规则：**
 - 如果站点已有完善 CLI（CLI 得 4–5 分），MCP 缺失的扣分幅度减半
@@ -115,7 +120,7 @@
 - 无 CLI 且无 MCP → 该维度上限为 2 分
 
 **评分标准：**
-- **5**: MCP Server 完善（含 mcp.json + 多工具覆盖 + 开源仓库）+ AI Coding 工具支持（cursorrules/skills 包）+ 完善 CLI
+- **5**: MCP Server 完善（含 mcp.json 或 server-card.json + 多工具覆盖 + 开源仓库）+ AI Coding 工具支持（cursorrules/skills 包）+ 完善 CLI；API 类站点额外有 API Catalog 或 OAuth 发现端点更优
 - **4**: MCP Server 基本完整（无 mcp.json 但有文档仓库）+ AI Coding 工具支持，或有完善 CLI + AI Coding 工具支持（MCP 部分缺失但 CLI 补偿）
 - **3**: 有 MCP 文档/仓库但实现不完整，或有 CLI + 部分 AI Coding 支持
 - **2**: 仅有 CLI 或仅有零散 AI 提及，无 MCP 无 AI Coding 工具适配
