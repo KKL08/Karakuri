@@ -3,7 +3,8 @@
 DocAI Audit — URL Resource Prober
 
 Probes a documentation site for AI-related resources:
-llms.txt, OpenAPI spec, MCP config, sitemap, robots.txt, mint.json.
+llms.txt, OpenAPI spec, MCP config, sitemap, robots.txt, mint.json,
+MCP Server Card, Agent Skills index, API Catalog, and response headers.
 
 Usage: python3 probe.py <base_url>
 Output: JSON to stdout
@@ -38,6 +39,21 @@ PROBE_TARGETS = [
         "resource_type": "mcp_json",
         "paths": ["/.well-known/mcp.json"],
         "max_content": 50_000,
+    },
+    {
+        "resource_type": "mcp_server_card",
+        "paths": ["/.well-known/mcp/server-card.json"],
+        "max_content": 50_000,
+    },
+    {
+        "resource_type": "agent_skills",
+        "paths": ["/.well-known/agent-skills/index.json"],
+        "max_content": 50_000,
+    },
+    {
+        "resource_type": "api_catalog",
+        "paths": ["/.well-known/api-catalog", "/api-catalog"],
+        "max_content": 100_000,
     },
     {
         "resource_type": "sitemap",
@@ -105,6 +121,43 @@ def probe_resource(origin: str, target: dict) -> tuple[str, dict]:
     return resource_type, {"exists": False, "url": last_url, "content_preview": None}
 
 
+def probe_response_headers(origin: str) -> dict:
+    """
+    Check root URL response headers for agent-relevant signals:
+    - Link header (RFC 8288 agent discovery)
+    - Markdown content negotiation (Accept: text/markdown)
+    """
+    results = {
+        "link_header": {"exists": False, "value": None},
+        "markdown_negotiation": {"exists": False},
+    }
+
+    # Check Link header
+    try:
+        req = Request(origin, headers={"User-Agent": USER_AGENT})
+        resp = urlopen(req, timeout=TIMEOUT, context=_ssl_ctx)
+        link = resp.headers.get("Link", "")
+        if link:
+            results["link_header"] = {"exists": True, "value": link[:500]}
+    except (URLError, HTTPError, TimeoutError, OSError):
+        pass
+
+    # Check Markdown content negotiation
+    try:
+        req = Request(
+            origin,
+            headers={"User-Agent": USER_AGENT, "Accept": "text/markdown, text/plain;q=0.9"},
+        )
+        resp = urlopen(req, timeout=TIMEOUT, context=_ssl_ctx)
+        content_type = resp.headers.get("Content-Type", "")
+        if "text/markdown" in content_type:
+            results["markdown_negotiation"] = {"exists": True}
+    except (URLError, HTTPError, TimeoutError, OSError):
+        pass
+
+    return results
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: python3 probe.py <base_url>"}))
@@ -121,15 +174,20 @@ def main():
 
     probes = {}
 
-    with ThreadPoolExecutor(max_workers=6) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {
             executor.submit(probe_resource, origin, target): target["resource_type"]
             for target in PROBE_TARGETS
         }
+        futures[executor.submit(probe_response_headers, origin)] = "response_headers"
 
         for future in as_completed(futures):
-            resource_type, result = future.result()
-            probes[resource_type] = result
+            resource_type = futures[future]
+            if resource_type == "response_headers":
+                probes["response_headers"] = future.result()
+            else:
+                rt, result = future.result()
+                probes[rt] = result
 
     output = {"base_url": origin, "probes": probes}
     print(json.dumps(output, ensure_ascii=False, indent=2))
