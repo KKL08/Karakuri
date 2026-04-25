@@ -173,15 +173,12 @@ def candidate_bases(input_url: str) -> list[dict]:
     parts = [part for part in parsed.path.split("/") if part]
     candidates = [{"label": "origin", "base_url": origin}]
 
-    # Many docs platforms mount AI resources under the docs app path, e.g. /docs/llms.txt.
-    if parts:
-        first = f"{origin}/{parts[0]}"
-        candidates.append({"label": f"mount:/{parts[0]}", "base_url": first})
-
-    # Also try the direct parent for nested docs deployments.
-    if len(parts) > 1:
-        parent = f"{origin}/{'/'.join(parts[:-1])}"
-        candidates.append({"label": "page-parent", "base_url": parent})
+    # Many docs platforms mount AI resources under a sub-application path, not
+    # necessarily /docs. Try every path prefix so /developer/docs/guide pages can
+    # discover /developer/llms.txt, /developer/docs/llms.txt, etc.
+    for index in range(1, len(parts) + 1):
+        prefix = "/".join(parts[:index])
+        candidates.append({"label": f"mount:/{prefix}", "base_url": f"{origin}/{prefix}"})
 
     seen = set()
     unique = []

@@ -39,7 +39,7 @@
 评估“AI 能不能不用人点 UI 就找到并读取文档”。
 
 **评估要点：**
-- `llms.txt`、`llms-full.txt` 是否存在。注意检查根路径、文档挂载路径（如 `/docs/llms.txt`）和响应头 `Link rel="llms-txt"`；根路径 404 但 docs mount 存在时，应判“存在但根路径发现性有小缺口”，不能判缺失。
+- `llms.txt`、`llms-full.txt` 是否存在。注意检查根路径、由输入 URL 推导出的所有文档挂载路径前缀（如 `/docs/llms.txt`、`/developer/llms.txt`、`/developer/docs/llms.txt`）和响应头 `Link rel="llms-txt"`；根路径 404 但某个 mount 存在时，应判“存在但根路径发现性有小缺口”，不能判缺失。
 - 每页是否支持 Markdown：`.md` 直连或 `Accept: text/markdown` 内容协商。
 - `sitemap.xml`、`robots.txt`、页面标题层级和导航结构是否便于机器索引。
 - 是否有 AI onboarding / AI-friendly 专属入口页。
@@ -47,7 +47,7 @@
 
 **评分标准：**
 - **5**: llms.txt + llms-full.txt 完整，页面 Markdown 可自动读取，响应头/HTML/站点地图能发现索引，并有 agent/MCP/API 发现入口。
-- **4**: llms.txt 或 llms-full.txt 存在于根路径或 docs mount，页面 Markdown 可读，结构清晰；缺少部分 well-known 入口。
+- **4**: llms.txt 或 llms-full.txt 存在于根路径或文档挂载路径，页面 Markdown 可读，结构清晰；缺少部分 well-known 入口。
 - **3**: 有 llms 或 Markdown 之一，或文档结构清晰但 AI 专属索引不完整。
 - **2**: 只有 sitemap/robots/HTML 可抓取，缺少 AI 专属索引和 Markdown。
 - **1**: 无可发现索引，页面结构难解析或依赖交互。

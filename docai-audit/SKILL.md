@@ -24,9 +24,9 @@ Build a broad evidence map before scoring.
 
 Keep both:
 - `origin`: scheme + host, e.g. `https://platform.example.com`
-- `input_url`: the exact docs page, e.g. `https://platform.example.com/docs/guides/intro`
+- `input_url`: the exact docs page, e.g. `https://platform.example.com/developer/docs/guides/intro`
 
-Do not assume AI resources only live at the origin root. Many docs platforms mount them under `/docs`.
+Do not assume AI resources only live at the origin root, and do not hard-code `/docs`. Many docs platforms mount resources under arbitrary subpaths such as `/docs`, `/developer`, `/developer/docs`, `/api/docs`, or locale prefixes. Treat every path prefix of the input URL as a possible documentation mount.
 
 **Step 2 — Run the probe script**
 
@@ -35,7 +35,7 @@ python3 <skill-path>/scripts/probe.py <docs-url>
 ```
 
 The probe checks:
-- origin and likely docs mounts such as `/docs`
+- origin and all likely docs mount prefixes derived from the input URL path
 - `llms.txt`, `llms-full.txt`
 - page Markdown through `.md` and `Accept: text/markdown`
 - OpenAPI/Swagger/API Catalog
@@ -46,7 +46,7 @@ The probe checks:
 
 Important interpretation rule:
 
-If `https://host/llms.txt` is 404 but `https://host/docs/llms.txt` exists or the docs page links to it, mark llms.txt as **present under docs mount**, not missing. Note the root-path discoverability gap separately.
+If `https://host/llms.txt` is 404 but a path-prefix candidate such as `https://host/docs/llms.txt`, `https://host/developer/llms.txt`, or `https://host/developer/docs/llms.txt` exists, or the docs page links to such an index, mark llms.txt as **present under docs mount**, not missing. Note the root-path discoverability gap separately.
 
 **Step 3 — Read first-party machine-readable sources first**
 
@@ -234,7 +234,7 @@ Output in Simplified Chinese.
 ## Important Notes
 
 - Evidence must be specific: URLs, response headers, file paths, content snippets, or keyword matches.
-- Do not mark llms.txt missing until you have checked origin root, docs mount candidates, response headers, `.md`, and `Accept: text/markdown`.
+- Do not mark llms.txt missing until you have checked origin root, all path-prefix mount candidates, response headers, `.md`, and `Accept: text/markdown`.
 - Do not over-penalize lack of MCP when a strong CLI fully serves personal agent users.
 - Do penalize enterprise readiness when API specs, error handling, rate limits, auth, or versioning are incomplete, even if CLI/MCP exists.
 - If a page requires clicking UI to copy content but the same content is available as Markdown or via content negotiation, treat it as machine-readable.
