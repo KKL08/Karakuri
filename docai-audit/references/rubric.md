@@ -1,27 +1,27 @@
-# DocAI Audit 评分标准 (Rubric v2)
+# DocAI Audit 评分标准 (Rubric v3)
 
-每个维度 1–5 分（整数），共 5 个维度。总分映射到百分制。
+每个维度 1-5 分（整数）。v3 的核心变化：把“个人/Agent 用户能否快速用起来”和“企业能否稳定接入生产 API”分开判断；CLI 与 MCP 不互相替代，但在不同用户场景里的权重不同。
 
 ## 分值定义
 
 | 分数 | 含义 | 描述 |
 |------|------|------|
-| 5 | 卓越 | 行业标杆水平，几乎无可改进 |
-| 4 | 良好 | 超出基本要求，有明确的 AI 友好设计意图 |
-| 3 | 及格 | 满足基本要求，但无主动的 AI 适配 |
-| 2 | 不足 | 有少量相关内容，但远不够用 |
-| 1 | 缺失 | 完全没有或几乎没有相关内容 |
+| 5 | 卓越 | 行业标杆，机器可发现、可读、可自动化接入 |
+| 4 | 良好 | 明显有 AI/Agent 友好设计，少量标准化缺口 |
+| 3 | 及格 | 人类开发者基本可用，AI 需要自行解析和补上下文 |
+| 2 | 不足 | 有零散内容，但难以稳定接入或自动化 |
+| 1 | 缺失 | 基本没有相关能力或证据 |
 
-## 等级定义（总分百分制）
+## 等级定义（百分制）
 
 | 等级 | 分数区间 | 含义 |
 |------|----------|------|
-| S | 90–100 | AI-Native 卓越 |
-| A | 75–89 | 优秀 |
-| B | 60–74 | 良好 |
-| C | 40–59 | 一般 |
-| D | 20–39 | 较差 |
-| F | 0–19 | 不合格 |
+| S | 90-100 | AI-Native 卓越 |
+| A | 75-89 | 优秀 |
+| B | 60-74 | 良好 |
+| C | 40-59 | 一般 |
+| D | 20-39 | 较差 |
+| F | 0-19 | 不合格 |
 
 ## 总分计算
 
@@ -30,115 +30,126 @@
 百分制总分 = (原始加权分 - 1) / 4 × 100  // 映射到 0 ~ 100
 ```
 
-对于不适用的维度（如无 API 的站点不评估 API 规范），从权重中排除并归一化。
+如某维度确实不适用，排除该维度并归一化剩余权重。
 
 ---
 
-## 维度 1: AI 可发现性 — 权重 15%
+## 维度 1: AI 可发现性与可读取性 — 权重 20%
 
-合并自：llms.txt 与 AI 入口 + 文档多格式支持
+评估“AI 能不能不用人点 UI 就找到并读取文档”。
 
 **评估要点：**
-- llms.txt 文件是否存在（探测脚本数据），格式是否完整（含标题、描述、URL 链接）
-- 是否提供 llms-full.txt 完整版本
-- 是否有专门的 AI onboarding / AI-friendly 入口页面
-- 文档页面是否支持 Markdown/纯文本获取（如 .md 后缀或 Accept: text/markdown 内容协商）
-- 标题层级结构是否清晰，内容是否便于 AI 解析
-- MCP Server Card 是否存在（`/.well-known/mcp/server-card.json`，探测脚本 `mcp_server_card` 字段）
-- Agent Skills index 是否存在（`/.well-known/agent-skills/index.json`，探测脚本 `agent_skills` 字段）
-- robots.txt 是否包含针对 AI 爬虫的明确规则（如 GPTBot、ClaudeBot、anthropic-ai、PerplexityBot 等的 Allow/Disallow 声明）
-- 根 URL 响应头是否包含 `Link` header（探测脚本 `response_headers.link_header` 字段）
+- `llms.txt`、`llms-full.txt` 是否存在。注意检查根路径、文档挂载路径（如 `/docs/llms.txt`）和响应头 `Link rel="llms-txt"`；根路径 404 但 docs mount 存在时，应判“存在但根路径发现性有小缺口”，不能判缺失。
+- 每页是否支持 Markdown：`.md` 直连或 `Accept: text/markdown` 内容协商。
+- `sitemap.xml`、`robots.txt`、页面标题层级和导航结构是否便于机器索引。
+- 是否有 AI onboarding / AI-friendly 专属入口页。
+- 是否有 MCP Server Card、Agent Skills index、API Catalog 等 well-known 发现入口。
 
 **评分标准：**
-- **5**: llms.txt 存在且格式完整 + llms-full.txt 或等效完整版 + 专属 AI 入口页 + Markdown 内容协商或 .md 版本 + MCP Server Card 或 Agent Skills index 至少一项
-- **4**: llms.txt 存在且格式完整 + 以上其中 2 项缺失，或 llms.txt 格式完整 + robots.txt 有 AI 爬虫规则 + 良好文档结构
-- **3**: llms.txt 存在但格式简陋，或无 llms.txt 但有 AI 入口页 + robots.txt AI 规则 + 良好文档结构
-- **2**: 无 llms.txt，文档结构基本可解析，robots.txt 有部分 AI 规则但无专属 AI 设计
-- **1**: 无 llms.txt，无 AI 入口，无任何 agent 发现机制，文档结构混乱难以机器解析
+- **5**: llms.txt + llms-full.txt 完整，页面 Markdown 可自动读取，响应头/HTML/站点地图能发现索引，并有 agent/MCP/API 发现入口。
+- **4**: llms.txt 或 llms-full.txt 存在于根路径或 docs mount，页面 Markdown 可读，结构清晰；缺少部分 well-known 入口。
+- **3**: 有 llms 或 Markdown 之一，或文档结构清晰但 AI 专属索引不完整。
+- **2**: 只有 sitemap/robots/HTML 可抓取，缺少 AI 专属索引和 Markdown。
+- **1**: 无可发现索引，页面结构难解析或依赖交互。
 
 ---
 
-## 维度 2: 文档与 API 规范 — 权重 25%
+## 维度 2: 个人/Agent 用户可用性 — 权重 20%
 
-合并自：结构化 API 描述 + API 一致性 + 错误处理与排障
+评估“个人开发者或使用 coding agent 的用户能不能快速让模型/工具用起来”。
 
 **评估要点：**
-- OpenAPI/Swagger spec 文件是否存在（探测脚本数据）及完整度
-- API 命名风格是否统一（camelCase/snake_case/kebab-case 保持一致）
-- HTTP 方法使用是否规范（GET/POST/PUT/DELETE 语义正确）
-- URL 路径结构是否一致
-- HTTP 状态码覆盖度（400/401/403/404/429/500 等）
-- 错误响应格式是否有示例
-- 是否有排障/FAQ 页面
-- 是否有速率限制文档
+- 是否有清晰的 CLI、SDK、MCP、AI IDE / coding agent 接入指南。
+- 是否覆盖 Claude Code、Cursor、Codex CLI、Cline、OpenCode、Roo Code、Windsurf、Copilot 等常见工具。
+- 是否提供可复制命令、配置文件、环境变量、验证命令、常见错误处理。
+- CLI 是否足够完整：安装、鉴权、调用、输出位置、命令帮助、稳定结构化输出。
+- MCP 是否足够完整：工具列表、参数 schema、安装命令、多个客户端配置、验证方式。
 
-**特殊规则：** 如果站点无 REST API（纯教程/概念文档），标记"不适用"并排除该维度权重。
+**CLI/MCP 判断规则：**
+- 对个人/Agent 用户，完善 CLI 可以基本满足需求；缺 MCP 不应重扣。
+- MCP 是互操作性和 IDE 集成的加分项，不天然高于 CLI。
+- 只有网页说明、没有 CLI/MCP/SDK/工具配置时，本维度最高 3 分。
 
 **评分标准：**
-- **5**: 完整 OpenAPI spec + API 风格高度统一 + 完善错误码文档（5+ 状态码+示例）+ 排障/FAQ + 速率限制
-- **4**: 有 OpenAPI spec（或完整端点文档）+ API 基本统一 + 有错误码和排障，缺少其中 1 项
-- **3**: 无 spec 但有较完整的 API 文档 + 大体统一 + 有基本错误码说明
-- **2**: API 文档不全，风格混乱，错误处理仅零散提及
-- **1**: 无 API 规范，无错误文档，或完全不适用
+- **5**: CLI 或 MCP 完善，且覆盖多个 AI coding 工具；配置、验证、排障完整。
+- **4**: 有成熟 CLI 或 MCP，并有 2 个以上 agent/IDE 接入指南；少量自动化缺口。
+- **3**: 有 SDK/API quickstart 和少量工具配置，但 agent 用户仍需较多手动推断。
+- **2**: 只有零散示例或营销式介绍，缺少可直接执行的配置。
+- **1**: 无个人/Agent 接入路径。
 
 ---
 
-## 维度 3: 代码示例质量 — 权重 20%
+## 维度 3: 企业 API 接入完整性 — 权重 25%
 
-合并自：代码示例质量 + Token 效率；SDK 覆盖作为多语言信号
+评估“企业工程团队能不能把 API 稳定、可审计、可维护地接入生产系统”。
 
 **评估要点：**
-- 代码示例数量和语言多样性（官方 SDK 覆盖的语言数量作为参考信号）
-- 示例是否包含完整 import 语句
-- 示例是否包含错误处理
-- 示例代码是否可直接运行（非伪代码）
-- 页面内容密度：信息精简，无大量营销/重复/样板内容
-- 分段与标题层级是否有助于 AI 定向提取
+- OpenAPI/Swagger/API Catalog 是否存在，是否覆盖主要接口。
+- API reference 是否完整：鉴权、端点、请求/响应 schema、示例、异步任务、分页/文件/回调等。
+- 错误码、HTTP 状态码、限流、重试、幂等、超时、trace/request id、排障路径是否清楚。
+- SDK 覆盖、版本/模型变更日志、弃用策略、兼容性说明是否完整。
+- 安全、权限、数据治理、企业支持/SLA/合规信息是否能找到。
+
+**CLI/MCP 与 API 的边界：**
+- CLI/MCP 不能替代 API 文档和 OpenAPI spec。
+- 如果 CLI/MCP 能自动读取 API spec、列出接口、生成接入代码或迁移指南，可在维度 4 加分。
 
 **评分标准：**
-- **5**: 20+ 示例 + 4+ 语言（含 SDK 覆盖）+ 多数含 import 和错误处理 + 内容精简高密度
-- **4**: 10+ 示例 + 2–3 语言 + 部分含 import/错误处理 + 内容密度较高
-- **3**: 5+ 示例 + 至少 1 种语言 + 基本可运行 + 内容密度一般
-- **2**: <5 个示例，或示例过于简略 + 内容冗余明显
-- **1**: 无代码示例或仅有伪代码
+- **5**: 完整机器可读 API spec + 完整 API reference + 错误/限流/排障/版本/企业信息齐全。
+- **4**: API reference 完整，错误码和限流清楚；缺少 OpenAPI 或企业级细节中的 1-2 项。
+- **3**: API 文档基本可用，但 schema、错误、限流或版本信息不够完整。
+- **2**: API 文档零散，生产接入风险较高。
+- **1**: 无 API 规范或主要接口不可判断。
 
 ---
 
-## 维度 4: AI 工具接入 — 权重 30%
+## 维度 4: 自动化接入能力 — 权重 25%
 
-合并自：MCP Server + AI Skills/Prompts + AI Coding 工具兼容性 + 可编程访问性（CLI）
+评估“agent 能不能从发现文档到生成/安装配置、读取接口、产出接入指南”。
 
 **评估要点：**
-- **MCP Server**：`/.well-known/mcp.json` 或 `/.well-known/mcp/server-card.json` 存在性（探测脚本 `mcp_json` / `mcp_server_card` 字段）、MCP 文档和开源仓库、工具覆盖丰富度
-- **AI Coding 工具支持**：.cursorrules、AGENTS.md、skills 包、针对 Cursor/Claude Code/Copilot/Windsurf/Cline 等的显式配置或使用指南
-- **CLI 可编程访问**：是否有完善的 CLI 工具，可按需调用或获取信息
-- **API 可发现性**（仅 API 类站点）：API Catalog 文件（探测脚本 `api_catalog` 字段）是否存在；OAuth/OIDC 端点（`/.well-known/openid-configuration`）是否可发现；这些是加分项，缺失不主动扣分
-
-**MCP 动态权重规则：**
-- 如果站点已有完善 CLI（CLI 得 4–5 分），MCP 缺失的扣分幅度减半
-- 逻辑：CLI + AI Skills 已经能支撑 AI Coding 工具使用，MCP 是加分项而非必要项
-- 无 CLI 且无 MCP → 该维度上限为 2 分
+- 是否有 `.well-known/mcp.json`、MCP Server Card、Agent Skills index、API Catalog、OpenAPI 链接等标准发现文件。
+- CLI/MCP 是否提供机器可读命令或工具：列出模型、列出接口、读取 docs/spec、生成配置、生成示例代码、检查鉴权、诊断错误。
+- 文档是否提供 agent prompt、可复制配置模板、结构化输出示例。
+- API spec、llms 索引、Markdown 页面之间是否互相链接，agent 能否沿链接自动完成接入。
 
 **评分标准：**
-- **5**: MCP Server 完善（含 mcp.json 或 server-card.json + 多工具覆盖 + 开源仓库）+ AI Coding 工具支持（cursorrules/skills 包）+ 完善 CLI；API 类站点额外有 API Catalog 或 OAuth 发现端点更优
-- **4**: MCP Server 基本完整（无 mcp.json 但有文档仓库）+ AI Coding 工具支持，或有完善 CLI + AI Coding 工具支持（MCP 部分缺失但 CLI 补偿）
-- **3**: 有 MCP 文档/仓库但实现不完整，或有 CLI + 部分 AI Coding 支持
-- **2**: 仅有 CLI 或仅有零散 AI 提及，无 MCP 无 AI Coding 工具适配
-- **1**: 无 CLI、无 MCP、无任何 AI 工具接入资源
+- **5**: 标准发现文件齐全；CLI/MCP 能自动读取 API 文档/spec 并生成接入配置或指南。
+- **4**: llms/Markdown/API spec/CLI/MCP 大多齐全，但缺少部分 well-known manifest 或自动生成能力。
+- **3**: 文档可自动读取，但接入自动化主要依赖 agent 解析说明。
+- **2**: 只有手动配置文档，缺少机器可读配置和发现入口。
+- **1**: 无自动化接入信号。
 
 ---
 
 ## 维度 5: 反馈与迭代 — 权重 10%
 
 **评估要点：**
-- Issue/Bug 反馈链接
-- 页面内反馈组件（"Was this helpful?" 等）
-- 更新日志/Changelog 的存在与活跃度
-- 社区/讨论链接（Discord、Slack、Forum 等）
+- 页面反馈组件或反馈 API。
+- Issue/Bug/邮箱/客服/社区链接。
+- Changelog / release notes 的存在与活跃度。
+- 文档是否提示如何提交具体、可行动的问题。
 
 **评分标准：**
-- **5**: 以上 4 项均有
-- **4**: 有其中 3 项
-- **3**: 有其中 2 项
-- **2**: 仅有 1 项
-- **1**: 无任何反馈或迭代机制
+- **5**: 页面反馈 + 社区/工单/邮箱 + 活跃 changelog + 明确问题提交格式。
+- **4**: 有其中 3 项。
+- **3**: 有其中 2 项。
+- **2**: 仅有 1 项。
+- **1**: 无反馈或迭代机制。
+
+---
+
+## 双视角评分建议
+
+最终报告除总分外，必须给出两个独立判断：
+
+```
+个人/Agent 用户友好度: <S/A/B/C/D/F>
+企业 API 接入友好度: <S/A/B/C/D/F>
+```
+
+建议权重：
+
+个人/Agent 用户友好度 = AI 可发现性 20% + 个人/Agent 可用性 35% + 企业 API 15% + 自动化接入 20% + 反馈 10%
+
+企业 API 接入友好度 = AI 可发现性 15% + 个人/Agent 可用性 10% + 企业 API 40% + 自动化接入 25% + 反馈 10%

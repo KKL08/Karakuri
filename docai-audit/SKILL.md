@@ -1,38 +1,67 @@
 ---
 name: docai-audit
-description: "Evaluate documentation sites for AI-friendliness across 5 dimensions (AI discoverability, API spec, code examples, AI tool integration, feedback). Use this skill whenever the user wants to audit a docs site for AI readiness, check how AI-friendly their documentation is, assess documentation quality for AI coding tools, or anything related to 'docai audit', 'AI 友好度评估', '文档 AI 可读性', 'docs AI audit'. Also trigger when users mention evaluating docs for Cursor, Claude Code, Copilot, or other AI coding tools compatibility."
+description: "Evaluate developer documentation for AI readiness across discoverability, personal/agent usability, enterprise API readiness, automation via CLI/MCP, and feedback loops. Use for doc AI audits, AI 友好度评估, llms.txt/Markdown indexing checks, Cursor/Claude Code/Codex/Cline compatibility, MCP/CLI/API documentation audits, and enterprise API onboarding readiness."
 argument-hint: <docs-url>
 ---
 
 # DocAI Audit — 开发文档 AI 友好度审计
 
-Evaluate a developer documentation site's AI-friendliness. Produce a structured Chinese report with scores across 12 dimensions, evidence, and actionable improvement suggestions.
+Evaluate a developer documentation site in Chinese. The audit must distinguish three related but different questions:
 
-## Two-Phase Workflow
+1. **AI 能不能自动发现和读取文档**：llms.txt、Markdown、sitemap、响应头。
+2. **个人/Agent 用户能不能快速用起来**：CLI、MCP、SDK、AI coding tool 配置。
+3. **企业能不能稳定接入生产 API**：API spec、错误码、限流、鉴权、版本、排障。
 
-This audit runs in two phases: **Discovery** (breadth scan) then **Evaluation** (depth assessment). Present the discovery checklist to the user between phases so they can add hints or confirm before deep evaluation.
+CLI and MCP are not the same. For personal agent users, a strong CLI can be enough. For enterprise users, CLI/MCP should assist API onboarding but cannot replace complete API documentation and machine-readable specs.
 
-### Phase 1: Discovery (广度扫描)
+## Workflow
 
-Goal: build a panoramic view of what AI-friendly features the docs site has.
+### Phase 1: Discovery
 
-**Step 1 — Parse URL**
+Build a broad evidence map before scoring.
 
-Extract the base URL (scheme + host). If the user provides a deep path like `https://docs.example.com/api/v1/intro`, the base is `https://docs.example.com`.
+**Step 1 — Parse the input URL**
+
+Keep both:
+- `origin`: scheme + host, e.g. `https://platform.example.com`
+- `input_url`: the exact docs page, e.g. `https://platform.example.com/docs/guides/intro`
+
+Do not assume AI resources only live at the origin root. Many docs platforms mount them under `/docs`.
 
 **Step 2 — Run the probe script**
 
-Execute the bundled probe script to check for well-known AI resources:
-
 ```bash
-python3 <skill-path>/scripts/probe.py <base_url>
+python3 <skill-path>/scripts/probe.py <docs-url>
 ```
 
-This returns JSON with existence data for: `llms_txt`, `openapi`, `mcp_json`, `mcp_server_card`, `agent_skills`, `api_catalog`, `sitemap`, `robots_txt`, `mint_json`. Each entry has `exists`, `url`, and `content_preview`. A `response_headers` key contains `link_header` and `markdown_negotiation` signals from the root URL.
+The probe checks:
+- origin and likely docs mounts such as `/docs`
+- `llms.txt`, `llms-full.txt`
+- page Markdown through `.md` and `Accept: text/markdown`
+- OpenAPI/Swagger/API Catalog
+- MCP and agent discovery files
+- sitemap, robots.txt, mint.json
+- response headers such as `Link: rel="llms-txt"` and `x-llms-txt`
+- signals inside llms indexes for MCP, CLI, AI coding tools, OpenAPI, SDK
 
-**Step 3 — Broad WebSearch**
+Important interpretation rule:
 
-Search for AI-related content on the target site. Run these searches (adapt the domain from the URL):
+If `https://host/llms.txt` is 404 but `https://host/docs/llms.txt` exists or the docs page links to it, mark llms.txt as **present under docs mount**, not missing. Note the root-path discoverability gap separately.
+
+**Step 3 — Read first-party machine-readable sources first**
+
+If available, inspect in this order:
+1. `llms.txt`
+2. `llms-full.txt`
+3. current page `.md`
+4. `Accept: text/markdown` output
+5. sitemap/OpenAPI/API Catalog/MCP manifests
+
+Use web search only to discover additional first-party pages or repositories that these sources do not expose.
+
+**Step 4 — Broad search when needed**
+
+Search the target domain for:
 
 1. `site:<domain> MCP OR "model context protocol" OR mcp-server`
 2. `site:<domain> llms.txt OR "AI onboarding" OR "AI-friendly" OR "AI integration"`
@@ -43,99 +72,66 @@ Search for AI-related content on the target site. Run these searches (adapt the 
 7. `site:<domain> discord OR community OR feedback OR "rate this page"`
 8. `site:<domain> oauth OR "openid" OR "well-known" OR "api catalog"`
 
-Use WebSearch for these. Collect all discovered page URLs.
+Collect only relevant first-party URLs unless third-party repos are official.
 
-**Step 4 — Present Discovery Checklist**
+**Step 5 — Discovery checklist**
 
-Compile findings into a structured checklist organized by the 5 dimensions. For each dimension, note:
-- Found resources/pages (with URLs)
-- Not found / no evidence
+When the user expects an interactive audit, show a short checklist before scoring. If the user asks for a direct answer, include the checklist briefly inside the final report instead of pausing.
 
-Present this to the user in Chinese. Example format:
+Use these buckets:
 
-```
+```markdown
 ## 发现清单
 
-### AI 可发现性
-- [x] llms.txt: 存在 (https://docs.example.com/llms.txt)
-- [ ] AI onboarding 专属页面: 未发现
-- [ ] MCP Server Card (/.well-known/mcp/server-card.json): 未发现
-- [ ] Agent Skills index (/.well-known/agent-skills/index.json): 未发现
-- [ ] Link 响应头: 未检测到
-- [ ] Markdown 内容协商 (Accept: text/markdown): 不支持
-- [ ] robots.txt AI 爬虫规则: 未分析（robots.txt 存在，需查看内容）
+### AI 可发现性与可读取性
+- [ ] llms.txt / llms-full.txt:
+- [ ] 页面 Markdown:
+- [ ] sitemap / robots:
+- [ ] 响应头 Link / x-llms-txt:
 
-### API 规范
-- [x] OpenAPI spec: 存在 (https://docs.example.com/openapi.json)
-- [ ] API Catalog (/.well-known/api-catalog): 未发现
+### 个人/Agent 用户可用性
+- [ ] CLI:
+- [ ] MCP:
+- [ ] AI coding tools:
+- [ ] SDK / quickstart:
 
-### AI 工具集成
-- [ ] MCP Server: 未发现
-- [x] Cursor 集成指南: https://docs.example.com/guides/cursor
-- [x] CLI 工具文档: https://docs.example.com/cli
-...
+### 企业 API 接入完整性
+- [ ] OpenAPI / Swagger / API Catalog:
+- [ ] API reference:
+- [ ] 错误码 / 限流 / 排障:
+- [ ] 版本变更 / 弃用策略:
+
+### 自动化接入能力
+- [ ] well-known MCP / Agent Skills:
+- [ ] CLI/MCP 自动读取文档或生成配置:
+- [ ] 可复制配置模板 / agent prompt:
+
+### 反馈与迭代
+- [ ] 页面反馈:
+- [ ] 社区 / 工单 / 邮箱:
+- [ ] Changelog:
 ```
 
-Ask the user: "以上是初步发现清单，是否有补充线索？确认后我将进入深度评估。"
+### Phase 2: Evaluation
 
----
-
-### Phase 2: Evaluation (深度评估)
-
-Goal: fetch discovered pages, score each dimension, produce the final report.
-
-**Step 5 — Targeted WebFetch**
-
-Fetch the key pages discovered in Phase 1. Prioritize:
-- AI onboarding / AI-specific pages
-- MCP documentation
-- API reference pages
-- Quickstart / Getting Started
-- Error handling / troubleshooting pages
-- Changelog / feedback pages
-
-For each page, extract observations relevant to the 5 dimensions: code examples count/quality/languages, API endpoints and naming consistency, error codes, MCP/CLI/AI tool mentions, heading structure, content density, feedback mechanisms, etc.
-
-**Step 6 — Score Each Dimension**
-
-Read the detailed rubric from `references/rubric.md` and score each of the **5 dimensions** on a **1–5 integer scale**:
-
-- **5** = 卓越（行业标杆）
-- **4** = 良好（有明确 AI 友好设计意图）
-- **3** = 及格（满足基本要求，无主动 AI 适配）
-- **2** = 不足（有少量相关内容，远不够用）
-- **1** = 缺失（完全没有相关内容）
-
-For dimensions with discovered content: strictly match rubric criteria, cite specific evidence.
-For dimensions with no discovered content: score 1, noting "未检测到相关内容".
-For dimensions not applicable (e.g., API spec for non-API docs): mark "N/A" and exclude from weight.
-
-The 5 dimensions and their weights:
+Read `references/rubric.md` and score 5 dimensions:
 
 | # | 维度 | 权重 |
 |---|------|------|
-| 1 | AI 可发现性 | 15% |
-| 2 | 文档与 API 规范 | 25% |
-| 3 | 代码示例质量 | 20% |
-| 4 | AI 工具接入 | 30% |
+| 1 | AI 可发现性与可读取性 | 20% |
+| 2 | 个人/Agent 用户可用性 | 20% |
+| 3 | 企业 API 接入完整性 | 25% |
+| 4 | 自动化接入能力 | 25% |
 | 5 | 反馈与迭代 | 10% |
 
-**维度 4 特殊规则：** 若站点有完善 CLI（评估为 4–5 分级别），MCP 缺失的扣分幅度减半。无 CLI 且无 MCP，该维度上限为 2 分。
+Also produce two audience-specific grades:
 
-**Step 7 — Compute Total Score**
+- **个人/Agent 用户友好度**: give more weight to CLI/MCP/AI coding tool setup.
+- **企业 API 接入友好度**: give more weight to API specs, reliability, governance, and automated onboarding.
 
-```
-原始加权分 = Σ(维度分数 × 权重)           // 范围 1.0 ~ 5.0
-百分制总分 = (原始加权分 - 1) / 4 × 100   // 映射到 0 ~ 100
-```
+## Report Template
 
-If a dimension is N/A, exclude it and re-normalize remaining weights to sum to 100%.
-
-Apply the grading scale: S(90-100), A(75-89), B(60-74), C(40-59), D(20-39), F(0-19).
-
-**Step 8 — Generate Report**
-
-Output the full report in Chinese using this exact template:
+Output in Simplified Chinese.
 
 ```markdown
 # DocAI Audit 评估报告
@@ -144,50 +140,58 @@ Output the full report in Chinese using this exact template:
 **评估时间:** <date>
 **总分:** <score>/100 — 等级: <grade> (<label>)
 
----
+**个人/Agent 用户友好度:** <grade> — <one-sentence reason>
+**企业 API 接入友好度:** <grade> — <one-sentence reason>
+
+## 核心判断
+
+<直接说明它到底友好在哪里、不友好在哪里。区分 CLI/MCP/API 文档的边界。>
+
+## 发现清单
+
+<按 Phase 1 checklist 简写，必须引用具体 URL。>
 
 ## 评分概览
 
 | 维度 | 权重 | 得分(1-5) | 加权分贡献 |
 |------|------|-----------|-----------|
-| AI 可发现性 | 15% | x | x.xx |
-| 文档与 API 规范 | 25% | x | x.xx |
-| 代码示例质量 | 20% | x | x.xx |
-| AI 工具接入 | 30% | x | x.xx |
+| AI 可发现性与可读取性 | 20% | x | x.xx |
+| 个人/Agent 用户可用性 | 20% | x | x.xx |
+| 企业 API 接入完整性 | 25% | x | x.xx |
+| 自动化接入能力 | 25% | x | x.xx |
 | 反馈与迭代 | 10% | x | x.xx |
 | **合计** | **100%** | — | **x.xx** |
 
 ## 各维度详情
 
-### 1. AI 可发现性 (15%) — 得分: x/5
+### 1. AI 可发现性与可读取性 (20%) — 得分: x/5
 
 **证据:**
-- <evidence item>
-- <evidence item>
+- <specific URL/evidence>
 
 **建议:**
 - <specific actionable recommendation>
 
-### 2. 文档与 API 规范 (25%) — 得分: x/5
+### 2. 个人/Agent 用户可用性 (20%) — 得分: x/5
 
 **证据:**
-- <evidence item>
+- <specific URL/evidence>
 
 **建议:**
 - <specific actionable recommendation>
 
-### 3. 代码示例质量 (20%) — 得分: x/5
+### 3. 企业 API 接入完整性 (25%) — 得分: x/5
 
 **证据:**
-- <evidence item>
+- <specific URL/evidence>
 
 **建议:**
 - <specific actionable recommendation>
 
-### 4. AI 工具接入 (30%) — 得分: x/5
+### 4. 自动化接入能力 (25%) — 得分: x/5
 
 **证据:**
-- <evidence item>
+- <specific URL/evidence>
 
 **建议:**
 - <specific actionable recommendation>
@@ -195,7 +199,7 @@ Output the full report in Chinese using this exact template:
 ### 5. 反馈与迭代 (10%) — 得分: x/5
 
 **证据:**
-- <evidence item>
+- <specific URL/evidence>
 
 **建议:**
 - <specific actionable recommendation>
@@ -206,7 +210,7 @@ Output the full report in Chinese using this exact template:
    <reason and expected score impact>
 
    **修复参考：**
-   ```
+   ```text
    <copy-paste ready implementation instructions or file template>
    ```
 
@@ -214,7 +218,7 @@ Output the full report in Chinese using this exact template:
    <reason and expected score impact>
 
    **修复参考：**
-   ```
+   ```text
    <copy-paste ready implementation instructions or file template>
    ```
 
@@ -222,15 +226,15 @@ Output the full report in Chinese using this exact template:
    <reason and expected score impact>
 
    **修复参考：**
-   ```
+   ```text
    <copy-paste ready implementation instructions or file template>
    ```
 ```
 
 ## Important Notes
 
-- All report output should be in **Simplified Chinese**
-- Evidence must be **specific** — cite actual URLs, file contents, keyword matches. Do not use vague language like "seems good"
-- The Top 3 suggestions should focus on **highest ROI improvements** — high weight dimensions with low scores where small effort yields big gains
-- If WebFetch fails for a page, note it and adjust scoring accordingly rather than guessing
-- For non-API documentation sites (tutorials, guides without REST endpoints), mark 维度 2「文档与 API 规范」as "不适用" and exclude from weighted total
+- Evidence must be specific: URLs, response headers, file paths, content snippets, or keyword matches.
+- Do not mark llms.txt missing until you have checked origin root, docs mount candidates, response headers, `.md`, and `Accept: text/markdown`.
+- Do not over-penalize lack of MCP when a strong CLI fully serves personal agent users.
+- Do penalize enterprise readiness when API specs, error handling, rate limits, auth, or versioning are incomplete, even if CLI/MCP exists.
+- If a page requires clicking UI to copy content but the same content is available as Markdown or via content negotiation, treat it as machine-readable.

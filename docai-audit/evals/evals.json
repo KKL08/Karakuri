@@ -18,6 +18,12 @@
       "prompt": "评估一下腾讯 TRTC 的开发文档 AI 友好度 https://trtc.io/document",
       "expected_output": "中分（总分 40-65，等级 C 或 B）。有 MCP Server 和 AI Skills 仓库（近期新增），AI 工具接入得分有提升空间。但 llms.txt 缺失、OpenAPI spec 不完整、代码示例质量一般，整体 AI 可发现性和文档规范较弱。",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "评估 MiniMax 开发平台对于 AI coding 接入理解的友好程度 https://platform.minimaxi.com/docs/guides/models-intro",
+      "expected_output": "应识别 https://platform.minimaxi.com/docs/llms.txt 和 /docs/llms-full.txt 存在，不能因根路径 /llms.txt 404 判定 llms 缺失。应区分个人/Agent 用户与企业 API 接入：个人侧因 MiniMax CLI、MCP、Claude Code/Cursor/Codex 等指南得分较高；企业侧需要检查 OpenAPI/API reference、错误码、限流和自动化接入能力。应指出 CLI 对个人 Agent 用户可足够，MCP/CLI 不能替代企业级 API spec。",
+      "files": []
     }
   ]
 }
