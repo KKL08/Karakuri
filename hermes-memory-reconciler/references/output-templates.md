@@ -5,7 +5,7 @@
 ## 开场
 
 ```txt
-我先做只读检查，看看 Hermes 记忆里有没有重复、冲突、过期或不安全的条目。这一轮不会修改 USER.md 或 MEMORY.md，只会给你摘要和需要你判断的问题。
+我先检查 Hermes 记忆里有没有重复、冲突、过期或不安全的条目。这一阶段不会修改 USER.md 或 MEMORY.md，也不会写入 staged run，只会给你摘要和需要你判断的问题。
 ```
 
 ## CLI 不可用
@@ -22,7 +22,7 @@
 - USER.md: <found|missing|skipped>
 - MEMORY.md: <found|missing|skipped>
 
-没有修改任何文件。
+没有修改 Hermes 源记忆文件。
 
 我看到 <N> 个可能问题：
 - <X> 个重复条目
@@ -63,13 +63,15 @@ Hermes memory action plan:
 - replace target=<user|memory> old_text="<old>" content="<new>"
 - remove target=<user|memory> old_text="<old>"
 
-这只是 dry-run，还没有修改文件。
+这只是 dry-run，还没有修改 Hermes 源记忆文件。
 ```
 
 ## Staged run
 
 ```txt
-我已经生成 staged run：
+我已经在独立工作目录写好候选文件，没有改你的 Hermes 源记忆。
+
+staged run：
 
 - run_id: <run_id>
 - original/: 原始记忆快照

@@ -1,4 +1,4 @@
 interface:
   display_name: "Hermes Memory Reconciler"
-  short_description: "审计 Hermes 长期记忆里的冲突和风险"
+  short_description: "扫描检查 Hermes 长期记忆里的冲突和风险"
   default_prompt: "Use $hermes-memory-reconciler to audit Hermes memory conflicts before suggesting changes."
