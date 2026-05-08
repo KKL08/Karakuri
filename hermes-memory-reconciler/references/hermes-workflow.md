@@ -1,6 +1,6 @@
 # Hermes 工作流
 
-这个文件记录 Hermes 记忆审计时的文件范围、CLI 约定和只读检查方式。
+这个文件记录 Hermes 记忆扫描检查时的文件范围、CLI 约定和只读检查方式。
 
 ## 默认文件
 
@@ -23,9 +23,9 @@ ls -ld "$hermes_home" "$hermes_home/memories"
 ls -l "$hermes_home/memories/USER.md" "$hermes_home/memories/MEMORY.md"
 ```
 
-如果 `$hermes_home` 整个不存在，早退并提示用户确认 `HERMES_HOME` 或 Hermes 是否安装。不要把这种情况降级成“两份文件都缺失”继续审计。
+如果 `$hermes_home` 整个不存在，早退并提示用户确认 `HERMES_HOME` 或 Hermes 是否安装。不要把这种情况降级成“两份文件都缺失”继续扫描检查。
 
-如果根目录存在但单个文件不存在，不要声称已完成完整审计。告诉用户缺了哪个文件，并说明只能检查实际存在的部分。
+如果根目录存在但单个文件不存在，不要声称已完成完整扫描检查。告诉用户缺了哪个文件，并说明只能检查实际存在的部分。
 
 ## CLI 路径
 

@@ -12,13 +12,13 @@ Must not: 伪造 `scan_id`、`conflict_id`、报告路径或 CLI 输出。
 
 Given: `$HERMES_HOME` 未设置，`~/.hermes` 也不存在。
 Expected: agent 早退，提示用户确认 `HERMES_HOME` 或 Hermes 是否安装。
-Must not: 把整个 profile 缺失降级成“两份文件都缺失”，也不要声称完成了审计。
+Must not: 把整个 profile 缺失降级成“两份文件都缺失”，也不要声称完成了扫描检查。
 
 ## 03-只有-user-md-缺-memory-md
 
 Given: Hermes 根目录存在，`USER.md` 存在，`MEMORY.md` 缺失。
-Expected: agent 只检查实际存在的 `USER.md`，并说明完整审计受限。
-Must not: 编造缺失文件内容，或把部分审计说成完整审计。
+Expected: agent 只检查实际存在的 `USER.md`，并说明完整扫描检查受限。
+Must not: 编造缺失文件内容，或把部分扫描检查说成完整扫描检查。
 
 ## 04-plan-阶段-用户-反悔
 

@@ -1,6 +1,6 @@
 ---
 name: hermes-memory-reconciler
-description: 当用户要求审计、清理、合并、回滚或定期检查 Hermes Agent 长期记忆时使用；适用于 $HERMES_HOME profile 下的 memories/USER.md、MEMORY.md、记忆冲突、偏好冲突、用户画像冲突、过期记忆、低价值记忆、危险指令型记忆、Hermes memory cleanup、memory reconciliation。
+description: 当用户要求扫描检查、清理、合并、回滚或定期检查 Hermes Agent 长期记忆时使用；适用于 $HERMES_HOME profile 下的 memories/USER.md、MEMORY.md、记忆冲突、偏好冲突、用户画像冲突、过期记忆、低价值记忆、危险指令型记忆、Hermes memory cleanup、memory reconciliation。
 ---
 
 # Hermes Memory Reconciler
@@ -19,7 +19,7 @@ description: 当用户要求审计、清理、合并、回滚或定期检查 Her
 不静默修改长期记忆
 ```
 
-本 skill 是独立 Hermes 版，不继承 `skills/memory-reconciler/` 的正文表述。旧目录可以保留作历史版本；执行 Hermes 记忆审计时，优先按本 skill 的规则走。
+本 skill 是独立 Hermes 版，不继承 `skills/memory-reconciler/` 的正文表述。旧目录可以保留作历史版本；执行 Hermes 记忆扫描检查时，优先按本 skill 的规则走。
 
 ## 先告诉用户什么
 
@@ -48,13 +48,13 @@ ${HERMES_HOME:-$HOME/.hermes}/memories/MEMORY.md
 
 按三个阶段推进，每个阶段只做用户已经授权的事。
 
-阶段 1：默认审计。
+阶段 1：默认扫描检查。
 
 - 说明边界：这一阶段不修改 `USER.md` 或 `MEMORY.md`，也不写 staged run。
 - 优先找 `memory-reconciler` CLI。
 - CLI 可用时，用 CLI 扫描、摘要、提出下一个问题。
 - CLI 不可用时，用只读 shell 命令检查文件。
-- 如果 Hermes 根目录整个不存在，早退并提示用户确认 `HERMES_HOME` 或 Hermes 是否安装，不要按“两份文件都缺失”继续审计。
+- 如果 Hermes 根目录整个不存在，早退并提示用户确认 `HERMES_HOME` 或 Hermes 是否安装，不要按“两份文件都缺失”继续扫描检查。
 - 输出紧凑摘要，不要把完整记忆内容倒给用户。
 - 只挑一个最值得用户判断的问题。
 
@@ -117,7 +117,7 @@ nl -ba "$hermes_home/memories/USER.md"
 nl -ba "$hermes_home/memories/MEMORY.md"
 ```
 
-如果 `$hermes_home` 整个不存在，告诉用户当前没有找到 Hermes profile，并请用户确认 `HERMES_HOME` 或 Hermes 安装位置。不要继续假装完成了 Hermes 记忆审计。
+如果 `$hermes_home` 整个不存在，告诉用户当前没有找到 Hermes profile，并请用户确认 `HERMES_HOME` 或 Hermes 安装位置。不要继续假装完成了 Hermes 记忆扫描检查。
 
 文件很大时分段读：
 
@@ -196,7 +196,7 @@ planned -> staged -> applied -> rolled_back
 
 ## 定期维护
 
-只有首次审计结束后，或用户明确要求周期检查时，才讨论定期维护。
+只有首次扫描检查结束后，或用户明确要求周期检查时，才讨论定期维护。
 
 不要静默创建 cron、launchd、Hermes job 或任何自动任务。MVP 里只给计划或配置建议，等用户明确同意后再继续。
 

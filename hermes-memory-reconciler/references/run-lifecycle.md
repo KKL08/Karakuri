@@ -50,7 +50,7 @@ planned -> staged -> applied -> rolled_back
 }
 ```
 
-`plan_id` 在 manifest 里只是历史外键，用来追溯这个 run 来自哪个计划。`run_id` 才是 apply、rollback、审计和清理 staged artifacts 时使用的主 ID。
+`plan_id` 在 manifest 里只是历史外键，用来追溯这个 run 来自哪个计划。`run_id` 才是 apply、rollback、扫描检查和清理 staged artifacts 时使用的主 ID。
 
 ## Staging 规则
 
