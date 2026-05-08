@@ -2,31 +2,45 @@
 
 [English](./README.md)
 
-一组面向 Claude Code 和其他 Coding Agent 的 skills。部分 skill 专门适配 Claude Code，部分也可以迁移或改造给 Codex、Hermes、OpenClaw 等 agent runtime 使用。
+一组 `SKILL.md` 风格的 AI Agent skill 包。
+
+每个 skill 都把特定工作流需要的指令、参考资料和可选脚本封装在一个文件夹里，让 agent 可以稳定复用这套流程。仓库里的 skill 会尽量保持可迁移；如果某个 skill 依赖特定 runtime，会在说明里单独标出来。
 
 ## 可用 Skills
 
-| Skill | 说明 |
-|-------|------|
-| [coding-music](./coding-music) | 编码时播放你喜欢的音乐 — 权限弹窗出现时自动暂停，确认后自动恢复 |
-| [docai-audit](./docai-audit) | 开发文档 AI 友好度审计 — 评分覆盖 5 个维度，直指 AI 调用链路的关键节点 |
-| [gen-image-grounding](./gen-image-grounding) | 生图前先联网搜索和搜图，输出带参考图、来源和风险提示的生成规格 |
+| Skill | 适用对象 | 说明 |
+|-------|----------|------|
+| [coding-music](./coding-music) | Claude Code | 编码时播放你喜欢的音乐 — 权限弹窗出现时自动暂停，确认后自动恢复 |
+| [docai-audit](./docai-audit) | 通用 coding agent | 开发文档 AI 友好度扫描检查 — 评分覆盖 5 个维度，直指 AI 调用链路的关键节点 |
+| [gen-image-grounding](./gen-image-grounding) | 通用生成类 agent | 生图前先联网搜索和搜图，输出带参考图、来源和风险提示的生成规格 |
+| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | 扫描检查 Hermes 长期记忆里的重复、冲突、过期、低价值和危险指令型条目 |
 
 ## 如何安装
 
-将 skill 文件夹复制到 `~/.claude/skills/`：
+每个 skill 都是一个独立文件夹。把对应文件夹复制到你的 agent runtime 使用的 skill 目录即可：
 
 ```bash
 git clone https://github.com/KKL08/Skill.git
+
+# Claude Code
+mkdir -p ~/.claude/skills
 cp -r Skill/<skill-name> ~/.claude/skills/
+
+# Codex 本地 skills
+mkdir -p ~/.codex/skills
+cp -r Skill/<skill-name> ~/.codex/skills/
 ```
 
-然后重启 Claude Code。
+如果是 Hermes、OpenClaw 或其他 runtime，就放到对应 runtime 配置的 skill/plugin 目录里，或者把这个文件夹作为 Markdown 指令包导入。skill 里如果有 `agents/<runtime>.yaml`、`references/` 或 `scripts/`，需要和 `SKILL.md` 一起保留。
+
+复制后，如果目标 agent 不支持热加载，就重启或重新加载对应 runtime。
 
 ## 依赖
 
-- [Claude Code](https://claude.ai/code)
-- 各 skill 的具体依赖见对应文件夹内的 README
+- 一个能加载 `SKILL.md` skill 文件夹的 agent runtime，或者至少能引用 Markdown 指令文件夹的 agent 环境。
+- 各 skill 的具体依赖见对应文件夹内的 README 或 `SKILL.md`。
+- `coding-music` 仍然依赖 [Claude Code](https://claude.ai/code)、Claude Code hooks、[ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli) 和 `mpv`。
+- `hermes-memory-reconciler` 默认读取 `${HERMES_HOME:-$HOME/.hermes}/memories/` 下的 Hermes 记忆文件；未来如果有 `memory-reconciler` CLI 会优先使用，没有 CLI 时按只读 fallback 流程执行。
 
 ---
 
@@ -96,4 +110,25 @@ docai-audit 就是来回答这个问题的。
 **使用方式：**
 ```
 /gen-image-grounding
+```
+
+---
+
+### hermes-memory-reconciler `0.1 beta`
+
+#### 背景
+
+长期记忆用久了以后很容易变乱：用户偏好可能互相冲突，项目事实可能过期，低价值条目越积越多，甚至还可能把危险的 prompt 指令持久化进去。Hermes 的记忆尤其敏感，因为它会影响 agent 以后怎么理解用户。
+
+hermes-memory-reconciler 的核心判断是：清理长期记忆不是简单删文件，而是信任问题。它应该先只读检查，把问题说清楚，只在真正影响长期行为的时候问用户，并且不能静默改记忆。
+
+#### 它做什么
+
+以只读优先的方式扫描检查 Hermes 的 `USER.md` 和 `MEMORY.md`。它会识别完全重复、偏好冲突、用户画像冲突、适用范围不清、低价值记忆、疑似过期记忆，以及危险指令型记忆。
+
+需要用户判断时，它只问一个最关键的问题。用户裁决后，它生成 dry-run 的 Hermes memory action plan，比如 `add`、`replace`、`remove`。如果未来进入真实写入，必须先有 staged run，包含 `original/`、`proposed/`、`diffs/` 和 `manifest.json`，回滚也必须先预览。
+
+**使用方式：**
+```
+/hermes-memory-reconciler
 ```

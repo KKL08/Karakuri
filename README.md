@@ -2,31 +2,45 @@
 
 [中文版](./README.zh.md)
 
-A collection of skills for Claude Code and other coding agents. Some skills are Claude Code-specific, while others can also be adapted for Codex, Hermes, OpenClaw, and similar agent runtimes.
+A collection of `SKILL.md`-style instruction packs for AI agent runtimes.
+
+Each skill packages task-specific instructions, references, and optional scripts so an agent can run a workflow consistently. Skills are designed to be portable where possible, and runtime-specific requirements are called out explicitly.
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| [coding-music](./coding-music) | Plays your liked songs while coding — auto-pauses when Claude asks for permission, resumes after you confirm |
-| [docai-audit](./docai-audit) | Evaluates any docs site across 5 dimensions targeting the key nodes in an AI invocation chain |
-| [gen-image-grounding](./gen-image-grounding) | Searches and retrieves visual references before image generation, then outputs a grounded generation spec |
+| Skill | Best Fit | Description |
+|-------|----------|-------------|
+| [coding-music](./coding-music) | Claude Code | Plays your liked songs while coding — auto-pauses when Claude asks for permission, resumes after you confirm |
+| [docai-audit](./docai-audit) | Portable coding agents | Evaluates any docs site across 5 dimensions targeting the key nodes in an AI invocation chain |
+| [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches and retrieves visual references before image generation, then outputs a grounded generation spec |
+| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans and checks Hermes long-term memory for duplicates, conflicts, stale or low-signal entries, and unsafe instruction memories |
 
 ## How to Install a Skill
 
-Copy the skill folder into `~/.claude/skills/`:
+Each skill is a folder. Copy the folder into the skill directory used by your agent runtime:
 
 ```bash
 git clone https://github.com/KKL08/Skill.git
+
+# Claude Code
+mkdir -p ~/.claude/skills
 cp -r Skill/<skill-name> ~/.claude/skills/
+
+# Codex local skills
+mkdir -p ~/.codex/skills
+cp -r Skill/<skill-name> ~/.codex/skills/
 ```
 
-Then restart Claude Code.
+For Hermes, OpenClaw, or another runtime, use that runtime's configured skill/plugin directory, or import the folder content as runtime instructions. If the skill includes `agents/<runtime>.yaml`, `references/`, or `scripts/`, keep those files together with `SKILL.md`.
+
+After copying, restart or reload the target agent runtime if it does not hot-load skills.
 
 ## Requirements
 
-- [Claude Code](https://claude.ai/code)
-- Skill-specific dependencies listed in each skill's README
+- An agent runtime that can load `SKILL.md` skill folders, or that lets you reference Markdown instruction folders.
+- Skill-specific dependencies listed in each skill's README or `SKILL.md`.
+- `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
+- `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/`; a future `memory-reconciler` CLI is preferred, but the skill also defines a read-only manual fallback.
 
 ---
 
@@ -98,4 +112,25 @@ Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configure
 **Usage:**
 ```
 /gen-image-grounding
+```
+
+---
+
+### hermes-memory-reconciler `0.1 beta`
+
+#### Background
+
+Long-term agent memory gets messy over time. User preferences can conflict, project notes can become stale, and unsafe prompt-like instructions can accidentally become persistent memory. Hermes memory is especially sensitive because it affects how the agent understands the user in future sessions.
+
+hermes-memory-reconciler treats memory cleanup as a trust problem: inspect first, summarize clearly, ask the user only for high-impact decisions, and never silently rewrite long-term memory.
+
+#### What it does
+
+Scans and checks Hermes `USER.md` and `MEMORY.md` in a read-only-first workflow. It looks for exact duplicates, preference conflicts, profile conflicts, scope ambiguity, low-signal entries, possible stale memory, and unsafe instruction-injection memories.
+
+When a decision is needed, it asks one focused question, then produces a dry-run Hermes memory action plan such as `add`, `replace`, or `remove`. Any real write path must go through a staged run with `original/`, `proposed/`, `diffs/`, and `manifest.json`, with rollback preview before recovery.
+
+**Usage:**
+```
+/hermes-memory-reconciler
 ```
