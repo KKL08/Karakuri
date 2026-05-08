@@ -10,6 +10,7 @@ A collection of Claude Code skills. Each skill lives in its own folder and can b
 |-------|-------------|
 | [coding-music](./coding-music) | Plays your liked songs while coding — auto-pauses when Claude asks for permission, resumes after you confirm |
 | [docai-audit](./docai-audit) | Evaluates any docs site across 5 dimensions targeting the key nodes in an AI invocation chain |
+| [gen-image-grounding](./gen-image-grounding) | Searches and retrieves visual references before image generation, then outputs a grounded generation spec |
 
 ## How to Install a Skill
 
@@ -78,4 +79,23 @@ Scores across 5 dimensions that target the critical nodes in an AI invocation ch
 **Usage:**
 ```
 /docai-audit https://resend.com/docs
+```
+
+---
+
+### gen-image-grounding
+
+#### Background
+
+Image generation prompts that depend on real people, places, events, products, logos, outfits, architecture, posters, or readable text often need search and visual references before generation. gen-image-grounding turns a raw image prompt into a grounded generation spec.
+
+#### What it does
+
+It plans search queries, collects web and image evidence through configured providers, downloads reference images, and outputs `gen_prompt`, `reference_images`, `facts`, `sources`, and `warnings` for downstream image models.
+
+Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configured by environment variables.
+
+**Usage:**
+```
+/gen-image-grounding
 ```

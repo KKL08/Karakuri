@@ -1,0 +1,7 @@
+interface:
+  display_name: "Gen Image Grounding"
+  short_description: "Search and reference-ground image prompts"
+  default_prompt: "Use $gen-image-grounding to prepare a grounded image generation spec before creating the image."
+
+policy:
+  allow_implicit_invocation: true

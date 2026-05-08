@@ -10,6 +10,7 @@
 |-------|------|
 | [coding-music](./coding-music) | 编码时播放你喜欢的音乐 — 权限弹窗出现时自动暂停，确认后自动恢复 |
 | [docai-audit](./docai-audit) | 开发文档 AI 友好度审计 — 评分覆盖 5 个维度，直指 AI 调用链路的关键节点 |
+| [gen-image-grounding](./gen-image-grounding) | 生图前先联网搜索和搜图，输出带参考图、来源和风险提示的生成规格 |
 
 ## 如何安装
 
@@ -76,4 +77,23 @@ docai-audit 就是来回答这个问题的。
 **使用方式：**
 ```
 /docai-audit https://resend.com/docs
+```
+
+---
+
+### gen-image-grounding
+
+#### 背景
+
+真实人物、地点、事件、产品、徽标、服装、建筑、海报文字等生图需求，直接丢给生图模型容易靠幻觉补细节。gen-image-grounding 在生图前先做搜索和参考图 grounding。
+
+#### 它做什么
+
+根据原始 prompt 规划搜索 query，调用已配置的文本搜索、图片搜索和网页读取 provider，下载参考图，然后输出 `gen_prompt`、`reference_images`、`facts`、`sources` 和 `warnings`，供下游生图模型使用。
+
+已支持 Serper、火山引擎 Volcengine、Tavily、Firecrawl、Jina 等 provider 的环境变量接入。
+
+**使用方式：**
+```
+/gen-image-grounding
 ```
