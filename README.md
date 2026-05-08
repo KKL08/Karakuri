@@ -1,8 +1,8 @@
-# Skills for Claude Code
+# AI Agent Skills
 
 [中文版](./README.zh.md)
 
-A collection of Claude Code skills. Each skill lives in its own folder and can be installed independently.
+A collection of skills for Claude Code and other coding agents. Some skills are Claude Code-specific, while others can also be adapted for Codex, Hermes, OpenClaw, and similar agent runtimes.
 
 ## Available Skills
 
@@ -83,7 +83,7 @@ Scores across 5 dimensions that target the critical nodes in an AI invocation ch
 
 ---
 
-### gen-image-grounding
+### gen-image-grounding `0.1 beta`
 
 #### Background
 

@@ -1,8 +1,8 @@
-# Claude Code Skills 合集
+# AI Agent Skills 合集
 
 [English](./README.md)
 
-一组 Claude Code skill，每个 skill 独立放在自己的文件夹，可单独安装。
+一组面向 Claude Code 和其他 Coding Agent 的 skills。部分 skill 专门适配 Claude Code，部分也可以迁移或改造给 Codex、Hermes、OpenClaw 等 agent runtime 使用。
 
 ## 可用 Skills
 
@@ -81,7 +81,7 @@ docai-audit 就是来回答这个问题的。
 
 ---
 
-### gen-image-grounding
+### gen-image-grounding `0.1 beta`
 
 #### 背景
 
