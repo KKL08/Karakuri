@@ -114,7 +114,7 @@ docai-audit 就是来回答这个问题的。
 
 ---
 
-### hermes-memory-reconciler `0.1 beta`
+### hermes-memory-reconciler `0.2 beta`
 
 #### 背景
 

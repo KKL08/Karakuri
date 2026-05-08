@@ -116,7 +116,7 @@ Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configure
 
 ---
 
-### hermes-memory-reconciler `0.1 beta`
+### hermes-memory-reconciler `0.2 beta`
 
 #### Background
 
