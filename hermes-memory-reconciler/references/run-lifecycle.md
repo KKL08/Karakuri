@@ -90,9 +90,10 @@ planned -> staged -> applied -> rolled_back
 rollback 必须先 dry-run：
 
 ```bash
-memory-reconciler preview <run_id>
 memory-reconciler rollback <run_id> --dry-run
 ```
+
+`preview <run_id>` 是正向预览，用来看 staged 或 applied run 的原始变更；`rollback <run_id> --dry-run` 是反向预览，用来看回滚会改什么。回滚前不能用 `preview <run_id>` 替代 rollback dry-run。
 
 用户批准后才执行：
 

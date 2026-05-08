@@ -163,9 +163,10 @@ staged 后必须告诉用户：Hermes 源文件还没有被修改。
 已 apply 的 run 回滚前必须预览：
 
 ```bash
-memory-reconciler preview <run_id>
 memory-reconciler rollback <run_id> --dry-run
 ```
+
+`preview <run_id>` 用来看这个 run 的正向变更；`rollback <run_id> --dry-run` 用来看回滚这个 run 的反向变更。用户问“回滚会怎样”时，必须先用 rollback dry-run；只有需要回看当初应用了什么时，才额外使用 `preview <run_id>`。
 
 用户明确批准后才执行：
 
