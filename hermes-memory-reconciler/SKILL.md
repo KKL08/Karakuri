@@ -12,7 +12,7 @@ description: 当用户要求审计、清理、合并、回滚或定期检查 Her
 默认边界：
 
 ```txt
-先只读扫描
+默认阶段只检查，不写盘
 先给摘要
 一次只问一个关键问题
 真实写入前必须有 staged run
@@ -26,7 +26,7 @@ description: 当用户要求审计、清理、合并、回滚或定期检查 Her
 开始前先说清楚边界，语气自然一点：
 
 ```txt
-我先做只读检查，看看 Hermes 记忆里有没有重复、冲突、过期或不安全的条目。这一轮不会修改 USER.md 或 MEMORY.md，只会给你摘要和需要你判断的问题。
+我先检查 Hermes 记忆里有没有重复、冲突、过期或不安全的条目。这一阶段不会修改 USER.md 或 MEMORY.md，也不会写入 staged run，只会给你摘要和需要你判断的问题。
 ```
 
 然后直接执行。除非默认文件不存在、不可读，或用户给了别的路径，不要一上来反问路径。
@@ -46,14 +46,30 @@ ${HERMES_HOME:-$HOME/.hermes}/memories/MEMORY.md
 
 ## 推荐流程
 
-1. 说明只读边界。
-2. 优先找 `memory-reconciler` CLI。
-3. CLI 可用时，用 CLI 扫描、摘要、提出下一个问题。
-4. CLI 不可用时，用只读 shell 命令检查文件。
-5. 输出紧凑摘要，不要把完整记忆内容倒给用户。
-6. 只挑一个最值得用户判断的问题。
-7. 用户给出裁决后，生成 dry-run 的 Hermes memory action plan。
-8. 只有用户明确要求进入预览文件、apply 或 rollback 时，才进入 staged run 生命周期。
+按三个阶段推进，每个阶段只做用户已经授权的事。
+
+阶段 1：默认审计。
+
+- 说明边界：这一阶段不修改 `USER.md` 或 `MEMORY.md`，也不写 staged run。
+- 优先找 `memory-reconciler` CLI。
+- CLI 可用时，用 CLI 扫描、摘要、提出下一个问题。
+- CLI 不可用时，用只读 shell 命令检查文件。
+- 如果 Hermes 根目录整个不存在，早退并提示用户确认 `HERMES_HOME` 或 Hermes 是否安装，不要按“两份文件都缺失”继续审计。
+- 输出紧凑摘要，不要把完整记忆内容倒给用户。
+- 只挑一个最值得用户判断的问题。
+
+阶段 2：计划与预览。
+
+- 用户给出裁决后，生成 dry-run 的 Hermes memory action plan。
+- 用 `preview <plan_id>` 预览还没有 stage 的计划。
+- 如果 CLI 没有返回 `plan_id`，不要编造；停在可读 action plan。
+
+阶段 3：staged run、apply 和 rollback。
+
+- 只有用户明确要求进入候选文件、apply 或 rollback 时，才进入 staged run 生命周期。
+- `stage <plan_id>` 会写入独立工作目录并生成 `run_id`，但仍不修改 Hermes 源记忆。
+- 用 `preview <run_id>` 预览 staged run 的候选变更。
+- 真实 apply 和 rollback 都必须基于 `run_id`。
 
 ## CLI 可用时
 
@@ -65,8 +81,11 @@ memory-reconciler report <scan_id> --limit 5 --severity low
 memory-reconciler next-question <scan_id>
 memory-reconciler resolve <conflict_id> --decision <decision_id> --note "<user note>"
 memory-reconciler plan <resolution_id>
-memory-reconciler apply <plan_id> --dry-run
+memory-reconciler preview <plan_id>
 memory-reconciler stage <plan_id>
+memory-reconciler preview <run_id>
+memory-reconciler apply <run_id>
+memory-reconciler rollback <run_id> --dry-run
 ```
 
 执行时记住：
@@ -74,10 +93,11 @@ memory-reconciler stage <plan_id>
 - `scan --read-only` 只能视为检查，不代表可以写文件。
 - 用 `report` 拿摘要，避免把完整 report 塞进上下文。
 - 用 `next-question` 一次拿一个高影响问题。
-- `apply --dry-run` 只展示计划，不是真实修改。
-- 如果要生成候选文件，优先 `stage <plan_id>`，并确认有 `original/`、`proposed/`、`diffs/`、`manifest.json`。
+- `preview <plan_id|run_id>` 只展示计划或候选变更，不修改 Hermes 源记忆。
+- 如果要生成候选文件，优先 `stage <plan_id>`，并确认它返回 `run_id`，且 run 目录里有 `original/`、`proposed/`、`diffs/`、`manifest.json`。
+- 真实 `apply` 只对 `run_id` 执行，不对 `plan_id` 执行。
 
-不要编造 `scan_id`、`conflict_id`、`plan_id`。CLI 没有返回什么，就不要假装已经有。
+不要编造 `scan_id`、`conflict_id`、`decision_id`、`resolution_id`、`plan_id` 或 `run_id`。CLI 没有返回什么，就不要假装已经有。
 
 ## CLI 不可用时
 
@@ -91,10 +111,13 @@ memory-reconciler stage <plan_id>
 
 ```bash
 hermes_home="${HERMES_HOME:-$HOME/.hermes}"
+ls -ld "$hermes_home" "$hermes_home/memories"
 ls -l "$hermes_home/memories/USER.md" "$hermes_home/memories/MEMORY.md"
 nl -ba "$hermes_home/memories/USER.md"
 nl -ba "$hermes_home/memories/MEMORY.md"
 ```
+
+如果 `$hermes_home` 整个不存在，告诉用户当前没有找到 Hermes profile，并请用户确认 `HERMES_HOME` 或 Hermes 安装位置。不要继续假装完成了 Hermes 记忆审计。
 
 文件很大时分段读：
 
@@ -152,7 +175,7 @@ sed -n '1,220p' "$hermes_home/memories/MEMORY.md"
 
 ## Apply 和 rollback
 
-真实 apply 之前必须先有 staged run。没有 `original/` 快照和 `manifest.json`，不要真实 apply。
+真实 apply 之前必须先有 staged run。没有 `run_id`、`original/` 快照和 `manifest.json`，不要真实 apply。
 
 状态只使用：
 
@@ -162,13 +185,14 @@ planned -> staged -> applied -> rolled_back
 
 规则：
 
-- `planned`：只有计划，没有候选文件。
-- `staged`：已有候选文件，Hermes 源文件还没改。
-- `applied`：用户明确批准后，修改已经应用。
-- `rolled_back`：已应用的 run 已恢复或生成反向操作。
+- `planned`：只有 `plan_id`，没有候选文件，也没有 run 目录。
+- `staged`：`stage <plan_id>` 已生成 `run_id` 和候选文件，Hermes 源文件还没改。
+- `applied`：用户明确批准后，`run_id` 对应的修改已经应用。
+- `rolled_back`：已应用的 `run_id` 已恢复或生成反向操作。
 - 真实 apply 前必须已展示 dry-run preview。
 - rollback 必须先 dry-run。
-- 如果 run 只是 `staged`，告诉用户源文件未改，丢弃 run 就行。
+- 如果只有 `planned`，用户反悔时丢弃 plan 即可。
+- 如果 run 只是 `staged`，告诉用户源文件未改，丢弃或忽略 run 就行。
 
 ## 定期维护
 
