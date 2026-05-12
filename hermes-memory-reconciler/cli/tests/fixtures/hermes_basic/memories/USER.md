@@ -1,0 +1,4 @@
+- User prefers concise answers.
+- User prefers detailed explanations with tradeoffs.
+- User prefers concise answers.
+- User is based in Singapore.
