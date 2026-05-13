@@ -31,6 +31,8 @@ ls -l "$hermes_home/memories/USER.md" "$hermes_home/memories/MEMORY.md"
 
 CLI 可用时优先走：
 
+当前已实现的 M1/M2 路径：
+
 ```bash
 memory-reconciler scan --system hermes --read-only
 memory-reconciler report <scan_id> --limit 5 --severity low
@@ -38,6 +40,11 @@ memory-reconciler next-question <scan_id>
 memory-reconciler resolve <conflict_id> --decision <decision_id> --note "<user note>"
 memory-reconciler plan <resolution_id>
 memory-reconciler preview <plan_id>
+```
+
+后续 staged run 生命周期命令，当前 CLI 可能返回 `not_implemented`：
+
+```bash
 memory-reconciler stage <plan_id>
 memory-reconciler preview <run_id>
 memory-reconciler apply <run_id>
@@ -60,6 +67,8 @@ scan 输出可以包含这些字段：
 
 不要自己发明这些字段。只有 CLI 返回了，才可以引用。
 
+CLI 写入 `~/.memory-reconciler/` 的 artifact 可能保留 raw memory、`old_text`、line number 和 entry anchor。它们用于后续 staged/apply 校验，默认不要贴进对话、上传或提交。对用户展示时优先使用 stdout、`report` 和 `preview` 的遮盖后结果。
+
 ## ID 契约
 
 CLI 可以返回更多字段，但每一步必须能让 agent 找到下一步需要的 ID：
@@ -78,6 +87,8 @@ rollback <run_id>            -> run_id 状态变 rolled_back
 ```
 
 字段名以 CLI 实际输出为准。若只是字段名不同，但语义仍能唯一对应契约，agent 可以内部适配；若字段语义偏离契约，例如 `scan_id` 不能唯一定位扫描结果，或 `run_id` 实际指向 plan，必须先停下并告诉用户，不要硬走后续流程。
+
+如果某个 staged run 命令返回 `not_implemented`，不要降级成手写 run 目录或直接编辑 Hermes 源文件；停在 dry-run plan 并说明当前 CLI 只实现到 M1/M2。
 
 ## CLI 不可用时
 

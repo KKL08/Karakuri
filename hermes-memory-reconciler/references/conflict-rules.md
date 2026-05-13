@@ -105,7 +105,7 @@ Project has files.
 - 最高优先级处理。
 - 报告时遮盖 credential-like 内容。
 - 不要和普通记忆合并。
-- 先给 quarantine / remove 的 dry-run 建议，等用户确认。
+- 先给 remove 的 dry-run 建议，等用户确认；只有 staged lifecycle 明确定义 quarantine 语义后，才使用 quarantine action。
 
 ### possible_stale
 

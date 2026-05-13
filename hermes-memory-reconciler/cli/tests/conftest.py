@@ -11,6 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 FIXTURES = ROOT / "tests" / "fixtures"
+DUMMY_SECRET = "sk-" + "test-" + ("x" * 24)
 
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
