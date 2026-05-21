@@ -14,6 +14,7 @@ Each skill packages task-specific instructions, references, and optional scripts
 | [docai-audit](./docai-audit) | Portable coding agents | Evaluates any docs site across 5 dimensions targeting the key nodes in an AI invocation chain |
 | [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches and retrieves visual references before image generation, then outputs a grounded generation spec |
 | [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans and checks Hermes long-term memory for duplicates, conflicts, stale or low-signal entries, and unsafe instruction memories |
+| [skill-triage](./skill-triage) | Codex and Claude Code | Reviews installed skills, finds duplicates or confusing overlaps, and writes reviewable cleanup reports without modifying skills |
 
 ## How to Install a Skill
 
@@ -41,6 +42,7 @@ After copying, restart or reload the target agent runtime if it does not hot-loa
 - Skill-specific dependencies listed in each skill's README or `SKILL.md`.
 - `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
 - `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/`; a future `memory-reconciler` CLI is preferred, but the skill also defines a read-only manual fallback.
+- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and does not modify installed skills by itself.
 
 ---
 
@@ -133,4 +135,23 @@ When a decision is needed, it asks one focused question, then produces a dry-run
 **Usage:**
 ```
 /hermes-memory-reconciler
+```
+
+---
+
+### skill-triage `0.1 beta`
+
+#### Background
+
+Agent skill libraries tend to grow over time. Some skills are used once and forgotten; others overlap in description or task scope, making it harder for the agent to decide which one to call. SkillTriage helps turn that messy skill space into a reviewable maintenance report.
+
+#### What it does
+
+Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, and calls out broad groups that may need future attention.
+
+It is read-only by default: SkillTriage prepares reports, proposals, and recovery notes, but does not delete, archive, overwrite, or rewrite installed skills on its own.
+
+**Usage:**
+```
+/skill-triage
 ```
