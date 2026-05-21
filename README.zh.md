@@ -1,6 +1,6 @@
 # AI Agent Skills 合集
 
-[English](./README.md)
+[English](./README.en.md)
 
 一组 `SKILL.md` 风格的 AI Agent skill 包。
 
