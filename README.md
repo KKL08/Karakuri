@@ -1,24 +1,24 @@
-# AI Agent Skills
+# AI Agent Skills 合集
 
-[中文版](./README.zh.md)
+[English](./README.en.md)
 
-A collection of `SKILL.md`-style instruction packs for AI agent runtimes.
+一组 `SKILL.md` 风格的 AI Agent skill 包。
 
-Each skill packages task-specific instructions, references, and optional scripts so an agent can run a workflow consistently. Skills are designed to be portable where possible, and runtime-specific requirements are called out explicitly.
+每个 skill 都把特定工作流需要的指令、参考资料和可选脚本封装在一个文件夹里，让 agent 可以稳定复用这套流程。仓库里的 skill 会尽量保持可迁移；如果某个 skill 依赖特定 runtime，会在说明里单独标出来。
 
-## Available Skills
+## 可用 Skills
 
-| Skill | Best Fit | Description |
-|-------|----------|-------------|
-| [coding-music](./coding-music) | Claude Code | Plays your liked songs while coding — auto-pauses when Claude asks for permission, resumes after you confirm |
-| [docai-audit](./docai-audit) | Portable coding agents | Evaluates any docs site across 5 dimensions targeting the key nodes in an AI invocation chain |
-| [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches and retrieves visual references before image generation, then outputs a grounded generation spec |
-| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans and checks Hermes long-term memory for duplicates, conflicts, stale or low-signal entries, and unsafe instruction memories |
-| [skill-triage](./skill-triage) | Codex and Claude Code | Reviews installed skills, finds duplicates or confusing overlaps, and writes reviewable cleanup reports without modifying skills |
+| Skill | 适用对象 | 说明 |
+|-------|----------|------|
+| [coding-music](./coding-music) | Claude Code | 编码时播放你喜欢的音乐 — 权限弹窗出现时自动暂停，确认后自动恢复 |
+| [docai-audit](./docai-audit) | 通用 coding agent | 开发文档 AI 友好度扫描检查 — 评分覆盖 5 个维度，直指 AI 调用链路的关键节点 |
+| [gen-image-grounding](./gen-image-grounding) | 通用生成类 agent | 生图前先联网搜索和搜图，输出带参考图、来源和风险提示的生成规格 |
+| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | 扫描检查 Hermes 长期记忆里的重复、冲突、过期、低价值和危险指令型条目 |
+| [skill-triage](./skill-triage) | Codex / Claude Code | 检查当前 Agent 的 skill 库，找出重复、相似或调用边界容易混淆的 skill，并生成可审阅的整理报告；默认不修改已安装内容 |
 
-## How to Install a Skill
+## 如何安装
 
-Each skill is a folder. Copy the folder into the skill directory used by your agent runtime:
+每个 skill 都是一个独立文件夹。把对应文件夹复制到你的 agent runtime 使用的 skill 目录即可：
 
 ```bash
 git clone https://github.com/KKL08/Skill.git
@@ -27,44 +27,42 @@ git clone https://github.com/KKL08/Skill.git
 mkdir -p ~/.claude/skills
 cp -r Skill/<skill-name> ~/.claude/skills/
 
-# Codex local skills
+# Codex 本地 skills
 mkdir -p ~/.codex/skills
 cp -r Skill/<skill-name> ~/.codex/skills/
 ```
 
-For Hermes, OpenClaw, or another runtime, use that runtime's configured skill/plugin directory, or import the folder content as runtime instructions. If the skill includes `agents/<runtime>.yaml`, `references/`, or `scripts/`, keep those files together with `SKILL.md`.
+如果是 Hermes、OpenClaw 或其他 runtime，就放到对应 runtime 配置的 skill/plugin 目录里，或者把这个文件夹作为 Markdown 指令包导入。skill 里如果有 `agents/<runtime>.yaml`、`references/` 或 `scripts/`，需要和 `SKILL.md` 一起保留。
 
-After copying, restart or reload the target agent runtime if it does not hot-load skills.
+复制后，如果目标 agent 不支持热加载，就重启或重新加载对应 runtime。
 
-## Requirements
+## 依赖
 
-- An agent runtime that can load `SKILL.md` skill folders, or that lets you reference Markdown instruction folders.
-- Skill-specific dependencies listed in each skill's README or `SKILL.md`.
-- `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
-- `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/`; a future `memory-reconciler` CLI is preferred, but the skill also defines a read-only manual fallback.
-- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and does not modify installed skills by itself.
+- 一个能加载 `SKILL.md` skill 文件夹的 agent runtime，或者至少能引用 Markdown 指令文件夹的 agent 环境。
+- 各 skill 的具体依赖见对应文件夹内的 README 或 `SKILL.md`。
+- `coding-music` 仍然依赖 [Claude Code](https://claude.ai/code)、Claude Code hooks、[ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli) 和 `mpv`。
+- `hermes-memory-reconciler` 默认读取 `${HERMES_HOME:-$HOME/.hermes}/memories/` 下的 Hermes 记忆文件；未来如果有 `memory-reconciler` CLI 会优先使用，没有 CLI 时按只读 fallback 流程执行。
+- `skill-triage` 使用 Python 3 标准库脚本扫描本地 skill 文件夹，运行结果写入 `~/.skilltriage/runs/`；它默认不会修改已安装的 skill。
 
 ---
 
-## Skill Details
+## Skill 详情
 
 ### coding-music `0.1 beta`
 
-#### Background
+#### 背景
 
-As AI agents take over more of the actual coding, your role shifts — you're no longer writing every line, you're reviewing, deciding, directing. When Claude is running on its own, you can lean back and enjoy your music. When it actually needs you — a permission prompt, a key decision — that moment deserves your full focus.
+当 AI Agent 承担了越来越多的实际编码工作，你的角色在转变——不再是写每一行代码，而是在审查、决策、指挥。这意味着你的注意力比以前更稀缺，而不是更宽裕。每一次 Claude 真正需要你判断的时刻——一个权限确认，一个关键决策——都值得你完整的专注。而当 Claude 自我执行任务时候，你可以稍微放松一下，耳机里享受喜爱的音乐。
 
-Your attention is scarcer than ever. coding-music makes sure it goes where it matters.
+#### 它做什么
 
-#### What it does
+编码时播放你喜欢的音乐。权限弹窗出现时自动暂停，你确认后自动恢复。不需要切窗口，不需要摘耳机，专注和节奏都没断。
 
-Plays your liked songs while you code. When Claude is working autonomously, music plays. When it needs your input, music pauses — automatically. Resumes once you confirm. No window switching, no taking off your headphones — your focus and rhythm stay intact.
+可选开启：Claude 每次回复完毕也暂停，把节奏完全交还给你来决定何时继续。
 
-Optionally, it can also pause whenever Claude finishes a response — you decide when to pick back up.
+基于网易云音乐官方 CLI（[ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli)）和 Claude Code hook 系统构建。
 
-Built on NetEase Music's official CLI ([ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli)) and Claude Code's hook system.
-
-**Usage:**
+**使用方式：**
 ```
 /coding-music
 ```
@@ -73,26 +71,26 @@ Built on NetEase Music's official CLI ([ncm-cli](https://www.npmjs.com/package/@
 
 ### docai-audit
 
-#### Background
+#### 背景
 
-When Cursor, Claude Code, and Codex become standard dev tools, the way developers integrate cloud services changes. It's no longer "read the docs, write the code" — you send the docs to an AI, or let it search and pick the service itself, and it writes the integration for you.
+当 Cursor、Claude Code、Codex 成为标配开发工具，开发者接入一个云服务的方式正在改变——不再是人读文档再写代码，而是把文档发给 AI，或者让 AI 自行搜索选择服务提供方，直接生成集成代码。
 
-That shift raises a new question for every cloud service and developer tool: whose docs are actually easy for AI to understand, execute against, and get working?
+这个转变对云服务和工具提出了新的要求：同样的服务，谁家的文档对 AI 理解、执行和跑通更友好？
 
-docai-audit answers that.
+docai-audit 就是来回答这个问题的。
 
-#### What it does
+#### 它做什么
 
-Drop in a cloud service or developer tool's docs URL, get back a quantified report on exactly where that platform stands for AI coding and agent integration.
+输入一个云服务或开发工具的文档 URL，输出一份量化评估报告——这个平台对 AI coding 和 Agent 调用的支持程度到底在哪个层级。
 
-Good for:
+适用于：
 
-- **DevRel / docs teams** — find the gaps in your own docs' AI readiness
-- **Agent developers** — quickly gauge how AI-friendly a platform really is before committing
+- **DevRel / 文档团队**，找到自家文档的 AI 适配缺口
+- **Agent 开发者**，快速判断哪个平台对 AI coding 更友好
 
-Scores across 5 dimensions that target the critical nodes in an AI invocation chain.
+评分覆盖 5 个维度，直指 AI 调用链路的关键节点。
 
-**Usage:**
+**使用方式：**
 ```
 /docai-audit https://resend.com/docs
 ```
@@ -101,17 +99,17 @@ Scores across 5 dimensions that target the critical nodes in an AI invocation ch
 
 ### gen-image-grounding `0.1 beta`
 
-#### Background
+#### 背景
 
-Image generation prompts that depend on real people, places, events, products, logos, outfits, architecture, posters, or readable text often need search and visual references before generation. gen-image-grounding turns a raw image prompt into a grounded generation spec.
+真实人物、地点、事件、产品、徽标、服装、建筑、海报文字等生图需求，直接丢给生图模型容易靠幻觉补细节。gen-image-grounding 在生图前先做搜索和参考图 grounding。
 
-#### What it does
+#### 它做什么
 
-It plans search queries, collects web and image evidence through configured providers, downloads reference images, and outputs `gen_prompt`, `reference_images`, `facts`, `sources`, and `warnings` for downstream image models.
+根据原始 prompt 规划搜索 query，调用已配置的文本搜索、图片搜索和网页读取 provider，下载参考图，然后输出 `gen_prompt`、`reference_images`、`facts`、`sources` 和 `warnings`，供下游生图模型使用。
 
-Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configured by environment variables.
+已支持 Serper、火山引擎 Volcengine、Tavily、Firecrawl、Jina 等 provider 的环境变量接入。
 
-**Usage:**
+**使用方式：**
 ```
 /gen-image-grounding
 ```
@@ -120,19 +118,19 @@ Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configure
 
 ### hermes-memory-reconciler `0.2 beta`
 
-#### Background
+#### 背景
 
-Long-term agent memory gets messy over time. User preferences can conflict, project notes can become stale, and unsafe prompt-like instructions can accidentally become persistent memory. Hermes memory is especially sensitive because it affects how the agent understands the user in future sessions.
+长期记忆用久了以后很容易变乱：用户偏好可能互相冲突，项目事实可能过期，低价值条目越积越多，甚至还可能把危险的 prompt 指令持久化进去。Hermes 的记忆尤其敏感，因为它会影响 agent 以后怎么理解用户。
 
-hermes-memory-reconciler treats memory cleanup as a trust problem: inspect first, summarize clearly, ask the user only for high-impact decisions, and never silently rewrite long-term memory.
+hermes-memory-reconciler 的核心判断是：清理长期记忆不是简单删文件，而是信任问题。它应该先只读检查，把问题说清楚，只在真正影响长期行为的时候问用户，并且不能静默改记忆。
 
-#### What it does
+#### 它做什么
 
-Scans and checks Hermes `USER.md` and `MEMORY.md` in a read-only-first workflow. It looks for exact duplicates, preference conflicts, profile conflicts, scope ambiguity, low-signal entries, possible stale memory, and unsafe instruction-injection memories.
+以只读优先的方式扫描检查 Hermes 的 `USER.md` 和 `MEMORY.md`。它会识别完全重复、偏好冲突、用户画像冲突、适用范围不清、低价值记忆、疑似过期记忆，以及危险指令型记忆。
 
-When a decision is needed, it asks one focused question, then produces a dry-run Hermes memory action plan such as `add`, `replace`, or `remove`. Any real write path must go through a staged run with `original/`, `proposed/`, `diffs/`, and `manifest.json`, with rollback preview before recovery.
+需要用户判断时，它只问一个最关键的问题。用户裁决后，它生成 dry-run 的 Hermes memory action plan，比如 `add`、`replace`、`remove`。如果未来进入真实写入，必须先有 staged run，包含 `original/`、`proposed/`、`diffs/` 和 `manifest.json`，回滚也必须先预览。
 
-**Usage:**
+**使用方式：**
 ```
 /hermes-memory-reconciler
 ```
@@ -141,17 +139,17 @@ When a decision is needed, it asks one focused question, then produces a dry-run
 
 ### skill-triage `0.1 beta`
 
-#### Background
+#### 背景
 
-Agent skill libraries tend to grow over time. Some skills are used once and forgotten; others overlap in description or task scope, making it harder for the agent to decide which one to call. SkillTriage helps turn that messy skill space into a reviewable maintenance report.
+Agent 的 skill 库用久了以后会自然变多：有些 skill 只用过一两次就被遗忘，有些描述和能力范围很接近，导致 Agent 在遇到任务时难以判断该调用哪一个。skill-triage 用来把这类混乱整理成一份可审阅的维护报告。
 
-#### What it does
+#### 它做什么
 
-Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, and calls out broad groups that may need future attention.
+扫描当前 Agent runtime 里的 skill，生成事实清单，并把可能重复、相似或调用边界容易混淆的 skill 交给 Agent 做进一步评估。最终报告会区分高置信重复、相似但边界清楚、以及范围较宽但暂时不适合直接清理的功能组。
 
-It is read-only by default: SkillTriage prepares reports, proposals, and recovery notes, but does not delete, archive, overwrite, or rewrite installed skills on its own.
+它默认只读：SkillTriage 会准备报告、建议和恢复说明，但不会自行删除、归档、覆盖或重写已经安装的 skill。
 
-**Usage:**
+**使用方式：**
 ```
 /skill-triage
 ```
