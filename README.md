@@ -42,7 +42,7 @@ cp -r Skill/<skill-name> ~/.codex/skills/
 - 各 skill 的具体依赖见对应文件夹内的 README 或 `SKILL.md`。
 - `coding-music` 仍然依赖 [Claude Code](https://claude.ai/code)、Claude Code hooks、[ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli) 和 `mpv`。
 - `hermes-memory-reconciler` 默认读取 `${HERMES_HOME:-$HOME/.hermes}/memories/` 下的 Hermes 记忆文件，并结合可用的 CLI 或内置指引生成检查报告和整理建议。
-- `skill-triage` 使用 Python 3 标准库脚本扫描本地 skill 文件夹，运行结果写入 `~/.skilltriage/runs/`；默认只生成报告。如果用户明确决定整理，它会先备份、再确认、再执行，并保留回退材料。
+- `skill-triage` 使用 Python 3 标准库脚本扫描本地 skill 文件夹，运行结果写入 `~/.skilltriage/runs/`；默认只生成报告。如果用户决定继续整理，它会先备份并请用户确认，确认后再执行，并保留回退材料。
 
 ---
 
@@ -147,7 +147,7 @@ Agent 的 skill 库用久了以后会自然变多：有些 skill 只用过一两
 
 扫描当前 agent runtime 里的 skill，生成事实清单，并把可能重复、相似或调用边界容易混淆的 skill 交给 agent 做进一步评估。最终报告会区分高置信重复、相似但边界清楚、以及范围较宽但暂时不适合直接清理的功能组。
 
-SkillTriage 默认只准备报告、建议和恢复说明。如果你明确决定继续整理，它会先让你逐项确认，并在写入前准备备份和确认步骤；插件托管、系统托管和 merge/dedupe 类建议不会自动执行。
+SkillTriage 默认只准备报告、建议和恢复说明。如果你决定继续整理，它会先列出待处理项目，等你确认后再写入；插件托管、系统托管和 merge/dedupe 类建议不会自动执行。
 
 **使用方式：**
 ```
