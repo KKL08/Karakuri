@@ -12,7 +12,8 @@ SkillTriage 用来帮助 Agent 整理当前运行环境里已经安装的 skills
 - 标记完全重复、description 过短或过宽、带脚本目录、插件托管、以及相关功能组等基础线索。
 - 把可能需要进一步判断的项目交给 Agent 评估，让 Agent 阅读 description 并比较调用边界。
 - 生成可审阅的 Markdown 报告、建议文件和恢复说明。
-- 默认只读，不会自动修改已安装的 skills。
+- 默认只读；只有用户明确进入整理执行流程并逐项确认后，才会 stage/apply 可执行整理动作。
+- 执行前会生成备份和确认短语；执行后可用本次 run 的恢复材料 rollback。
 
 ## 支持的运行环境
 
@@ -96,6 +97,18 @@ python3 ~/.claude/skills/skill-triage/scripts/scan_skills.py \
 - `report.md`：建议优先阅读的用户报告。
 - `recovery.md`：备份情况和未来恢复路径说明。
 
+## 可选整理执行
+
+SkillTriage 默认只生成审阅材料，不会自动删除、归档、覆盖或改写已安装的 skills。
+
+如果用户明确选择进入整理执行流程，当前 Agent 会先展示可执行候选项，只把用户逐项批准的动作写入 `execution/selected_actions.json`。随后执行流程分三步：
+
+1. `stage`：准备备份和 staged actions，不修改已安装 skill。
+2. 用户原样确认 `execution/approval_request.json` 里的确认短语。
+3. `apply`：只在 `approval.json` 与本次 staged actions 完全匹配时执行。
+
+每次重新 stage 都会让旧确认失效，避免旧 approval 被复用。执行后如果需要恢复，可以让 Agent 运行 rollback；rollback 仍会检查路径、hash 和恢复材料，不会无条件覆盖后续人工改动。
+
 ## 安全边界
 
-SkillTriage v1 只准备审阅材料和建议。它不会自行删除、归档、覆盖或重写已经安装的 skills。插件托管和系统托管的 skills 会被视为只读对象。
+插件托管和系统托管的 skills 会被视为只读对象。merge/dedupe 类建议仍然只作为审阅建议，不会自动执行。

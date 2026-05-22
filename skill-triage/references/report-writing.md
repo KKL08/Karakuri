@@ -37,7 +37,7 @@ For provider-separated tools, avoid saying "互补". Say "同类但边界清楚"
 
 For broad skill plus workflow skill, say "通用入口与专项流程". Example pattern: a broad service entrypoint and a narrower cleanup, review, or publishing workflow can both be valuable when the narrower workflow has distinct operating steps.
 
-Do not include internal report-review commentary in `report.md`. Avoid self-review hedges, implementation-note phrases, and future-iteration musings (the report is for the user, not for the team writing it). Put that material outside the user-facing report.
+Do not include process commentary in `report.md`. Avoid self-review hedges, implementation-note phrases, and future-iteration musings. The report should be written for the user who needs to decide what to keep, adjust, archive, or leave alone.
 
 For `## 没有修改的内容`, use factual user-facing wording. Prefer: "本次只生成审阅材料，没有删除、归档、覆盖或改写任何已安装 skill。" If `backup` is `off`, add: "由于本次没有保存原始快照，如果你之后手动采用某个建议，恢复需要依赖你自己的 git、备份或原始来源。"
 
@@ -50,6 +50,30 @@ At the top of the report, state the evaluation scope:
 If all `active_state` values are `unknown`, say once: "本次运行环境没有提供明确的启用状态信号，所以发现到文件不等于当前一定会触发。"
 
 For description parser findings, avoid saying "缺少 description" unless `description_absent` is true. For parse-incomplete cases, say: "基础筛查没有稳定解析出 description，需要 Agent 复核；这不等于当前运行环境一定无法触发这个 skill。"
+
+## 可选整理执行
+
+Add `## 可选整理执行` near the end of `report.md`.
+
+Use this wording as the default shape:
+
+```text
+默认建议先阅读报告，不立即执行。
+
+如果你想继续，可以让当前 Agent 进入整理执行流程。它会逐条带你审阅建议，只处理你明确批准的项，并先生成 staged 变更。执行前会检查备份、路径和 hash；执行后可以通过本次 run 的恢复材料回退。
+
+真正写入前还会有一次明确确认：staged 后会生成一段确认短语，只有你原样回复这段确认短语后，当前 Agent 才能写入 `execution/approval.json` 并继续 apply。每次重新 stage 都会让旧确认失效，需要按最新确认短语重新确认。
+
+恢复不是无条件覆盖。回退前仍会检查目标路径、文件 hash、run 目录、恢复材料和写入权限；如果发现文件后来被手动改过、目标路径已经被占用，或恢复材料缺失，SkillTriage 会停下来让你确认。
+```
+
+Summarize executable suggestions as:
+
+- `可归档候选`: only local writable skills that can safely map to `archive_skill`.
+- `可改写 description`: only approved local writable `SKILL.md` rewrites that can safely map to `replace_skill_file`.
+- `只建议不执行`: merge/dedupe ideas, managed/system/unknown-source/read-only/self-scan skills, and any suggestion that still needs manual judgment.
+
+If backup is `off`, say that execution is blocked until the user reruns with `targeted` or `full` backup. Do not imply SkillTriage can delete, merge, or dedupe automatically; merge/dedupe remains review-only in this iteration.
 
 ## 可读性复核
 
@@ -70,4 +94,4 @@ If the report feels like a scanner transcript, rewrite it once before delivery: 
 
 ## Proposal Wording
 
-Use "建议先看" for priority. Use "归档候选" for archive review items. Do not say that SkillTriage deleted, archived, fixed, or recovered anything in version 1. It only prepares reviewable files.
+Use "建议先看" for priority. Use "归档候选" for archive review items. Before opt-in execution, say SkillTriage only prepared reviewable files and did not delete, archive, overwrite, merge, dedupe, or recover anything. If the user later opts into execution, describe only the actions that were explicitly approved and actually staged or applied.

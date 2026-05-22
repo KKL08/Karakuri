@@ -12,7 +12,8 @@ It is designed for skill library maintenance: keeping a smaller, clearer set of 
 - Flags exact duplicates, suspiciously short or broad descriptions, script presence, plugin-managed skills, and related-function groups.
 - Routes likely candidates into Agent evaluation so the agent can read descriptions and compare boundaries in context.
 - Produces reviewable Markdown reports, proposals, and recovery notes.
-- Leaves installed skills unchanged by default.
+- Leaves installed skills unchanged by default; executable cleanup actions require the user to explicitly enter the execution flow and approve each staged action.
+- Creates backups and a confirmation phrase before apply; applied actions can be rolled back from the run's recovery artifacts.
 
 ## Supported Runtimes
 
@@ -96,6 +97,18 @@ Important files:
 - `report.md`: the main user-facing report to read first.
 - `recovery.md`: what was backed up and how recovery would work if future cleanup actions are taken.
 
+## Optional Execution Flow
+
+SkillTriage generates review materials by default. It does not automatically delete, archive, overwrite, or rewrite installed skills.
+
+If the user explicitly chooses the execution flow, the current agent presents executable candidates first and writes only user-approved actions to `execution/selected_actions.json`. Execution then happens in three steps:
+
+1. `stage`: prepare backups and staged actions without modifying installed skills.
+2. The user replies with the exact confirmation phrase from `execution/approval_request.json`.
+3. `apply`: execute only when `approval.json` exactly matches the current staged actions.
+
+Re-staging invalidates any previous approval, so stale approvals cannot be reused. After apply, the user can ask the agent to run rollback; rollback still checks paths, hashes, and recovery artifacts before restoring files.
+
 ## Safety
 
-SkillTriage v1 prepares reviewable reports and proposals. It does not delete, archive, overwrite, or rewrite installed skills on its own. Plugin-managed and system-managed skills are treated as read-only.
+Plugin-managed and system-managed skills are treated as read-only. Merge and dedupe proposals remain review-only and are not automatically executed.
