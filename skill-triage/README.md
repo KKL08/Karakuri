@@ -12,8 +12,9 @@ SkillTriage 用来帮助 Agent 整理当前运行环境里已经安装的 skills
 - 标记完全重复、description 过短或过宽、带脚本目录、插件托管、以及相关功能组等基础线索。
 - 把可能需要进一步判断的项目交给 Agent 评估，让 Agent 阅读 description 并比较调用边界。
 - 生成可审阅的 Markdown 报告、建议文件和恢复说明。
-- 默认只读；只有用户明确进入整理执行流程并逐项确认后，才会 stage/apply 可执行整理动作。
-- 执行前会生成备份和确认短语；执行后可用本次 run 的恢复材料 rollback。
+- 默认先停在报告和建议，不会自动改动已安装的 skills。
+- 如果你决定继续整理，Agent 会逐项征求确认，只处理你明确批准的项目。
+- 真正写入前会先准备备份，并要求一次明确确认；执行后可以按本次运行记录里的恢复材料回退。
 
 ## 支持的运行环境
 
@@ -97,18 +98,16 @@ python3 ~/.claude/skills/skill-triage/scripts/scan_skills.py \
 - `report.md`：建议优先阅读的用户报告。
 - `recovery.md`：备份情况和未来恢复路径说明。
 
-## 可选整理执行
+## 可选整理
 
-SkillTriage 默认只生成审阅材料，不会自动删除、归档、覆盖或改写已安装的 skills。
+大多数情况下，SkillTriage 会停在报告阶段：它告诉你哪些 skill 值得保留、哪些可能重复、哪些描述容易让 Agent 混淆。你可以只把它当成一次 skill 库体检来用。
 
-如果用户明确选择进入整理执行流程，当前 Agent 会先展示可执行候选项，只把用户逐项批准的动作写入 `execution/selected_actions.json`。随后执行流程分三步：
+如果你明确说要继续整理，Agent 会先列出可执行的候选项，让你逐项选择。目前可执行的动作只覆盖两类：归档可写 skill，或用已经生成的建议版本替换可写 skill 的 `SKILL.md`。
 
-1. `stage`：准备备份和 staged actions，不修改已安装 skill。
-2. 用户原样确认 `execution/approval_request.json` 里的确认短语。
-3. `apply`：只在 `approval.json` 与本次 staged actions 完全匹配时执行。
+第一步只是准备备份和待执行动作，不会立刻改动已安装 skill。真正写入前，Agent 必须让你原样回复一段确认短语；这段确认只对当前这批待执行动作有效。如果重新准备动作，旧确认会失效。
 
-每次重新 stage 都会让旧确认失效，避免旧 approval 被复用。执行后如果需要恢复，可以让 Agent 运行 rollback；rollback 仍会检查路径、hash 和恢复材料，不会无条件覆盖后续人工改动。
+执行后，本次运行目录会保留恢复材料。需要恢复时，可以让 Agent 回退本次执行；回退前仍会检查路径和文件内容，避免覆盖你后来手动改过的东西。
 
 ## 安全边界
 
-插件托管和系统托管的 skills 会被视为只读对象。merge/dedupe 类建议仍然只作为审阅建议，不会自动执行。
+插件托管、系统托管、只读、来源不明，以及 SkillTriage 自己，都不会被作为可执行整理对象。merge/dedupe 类建议只会出现在报告里，不会自动执行。

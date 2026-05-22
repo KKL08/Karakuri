@@ -12,8 +12,9 @@ It is designed for skill library maintenance: keeping a smaller, clearer set of 
 - Flags exact duplicates, suspiciously short or broad descriptions, script presence, plugin-managed skills, and related-function groups.
 - Routes likely candidates into Agent evaluation so the agent can read descriptions and compare boundaries in context.
 - Produces reviewable Markdown reports, proposals, and recovery notes.
-- Leaves installed skills unchanged by default; executable cleanup actions require the user to explicitly enter the execution flow and approve each staged action.
-- Creates backups and a confirmation phrase before apply; applied actions can be rolled back from the run's recovery artifacts.
+- Stops at reports and recommendations by default; it does not change installed skills on its own.
+- If you choose to clean up, the agent must ask you to approve specific items first.
+- Before any write, SkillTriage prepares backups and asks for an explicit confirmation phrase. Applied changes can be rolled back from the run artifacts.
 
 ## Supported Runtimes
 
@@ -97,18 +98,16 @@ Important files:
 - `report.md`: the main user-facing report to read first.
 - `recovery.md`: what was backed up and how recovery would work if future cleanup actions are taken.
 
-## Optional Execution Flow
+## Optional Cleanup
 
-SkillTriage generates review materials by default. It does not automatically delete, archive, overwrite, or rewrite installed skills.
+In normal use, SkillTriage stops at a review report. It helps you see which skills are worth keeping, which ones may be duplicates, and which descriptions could confuse the agent.
 
-If the user explicitly chooses the execution flow, the current agent presents executable candidates first and writes only user-approved actions to `execution/selected_actions.json`. Execution then happens in three steps:
+If you explicitly ask the agent to continue, SkillTriage can guide a small cleanup flow for items you approve one by one. Today, executable actions are limited to archiving a writable skill or replacing a writable `SKILL.md` with a prepared proposal.
 
-1. `stage`: prepare backups and staged actions without modifying installed skills.
-2. The user replies with the exact confirmation phrase from `execution/approval_request.json`.
-3. `apply`: execute only when `approval.json` exactly matches the current staged actions.
+The first step only prepares backups and the selected actions; it does not modify installed skills. Before anything is applied, the agent must ask you to repeat an exact confirmation phrase. That confirmation is valid only for the current prepared set, so preparing a new set invalidates the old confirmation.
 
-Re-staging invalidates any previous approval, so stale approvals cannot be reused. After apply, the user can ask the agent to run rollback; rollback still checks paths, hashes, and recovery artifacts before restoring files.
+After changes are applied, the run directory keeps recovery artifacts. You can ask the agent to roll back an applied action; rollback still checks paths and file hashes, so it stops if files changed after the original action.
 
 ## Safety
 
-Plugin-managed and system-managed skills are treated as read-only. Merge and dedupe proposals remain review-only and are not automatically executed.
+Plugin-managed, system-managed, read-only, unknown-source, and SkillTriage's own files are not executable cleanup targets. Merge and dedupe suggestions remain report-only and are not automatically executed.

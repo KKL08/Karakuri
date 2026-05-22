@@ -42,7 +42,7 @@ After copying, restart or reload the target agent runtime if it does not hot-loa
 - Skill-specific dependencies listed in each skill's README or `SKILL.md`.
 - `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
 - `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/` and uses the available CLI or built-in guidance to produce an inspection report and cleanup recommendations.
-- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/`; the report leaves any installed-skill cleanup to the user.
+- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and stops at reports by default. If the user chooses to clean up, it prepares backups, asks for explicit confirmation, and keeps rollback materials.
 
 ---
 
@@ -147,7 +147,7 @@ Agent skill libraries tend to grow over time. Some skills are used once and forg
 
 Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, and calls out broad groups that may need future attention.
 
-SkillTriage prepares reports, proposals, and recovery notes. Deleting, archiving, overwriting, or rewriting installed skills remains a user decision.
+SkillTriage prepares reports, proposals, and recovery notes by default. If the user explicitly chooses to clean up, it asks for item-by-item approval and prepares backups before writing; plugin-managed, system-managed, merge, and dedupe suggestions are not automatically executed.
 
 **Usage:**
 ```
