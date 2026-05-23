@@ -137,7 +137,7 @@ It asks targeted questions to help prioritize how conflicting memories should be
 
 ---
 
-### skill-triage `0.1 beta`
+### skill-triage `0.3 beta`
 
 #### Background
 
