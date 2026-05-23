@@ -101,7 +101,7 @@ python3 ~/.claude/skills/skill-triage/scripts/scan_skills.py \
 - `recovery.md`：备份情况和未来恢复路径说明。
 - `decisions/`：需要用户决定的取舍、用户本次选择，以及待确认的偏好记忆草稿。
 
-## 需要你决定与偏好记忆
+## 偏好记忆
 
 有些整理问题不能只靠相似度判断。比如两个 skill 都合理，一个更像通用入口，另一个更像固定流程；到底保留哪个，往往取决于你的使用习惯。SkillTriage 会把这类问题放到“需要你决定”，说明差异和可选处理方式。
 

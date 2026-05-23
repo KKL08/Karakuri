@@ -101,7 +101,7 @@ Important files:
 - `recovery.md`: what was backed up and how recovery would work if future cleanup actions are taken.
 - `decisions/`: user-dependent decisions, the user's current choices, and preference-memory drafts waiting for confirmation.
 
-## User Decisions And Preference Memory
+## Preference Memory
 
 Some cleanup choices cannot be decided from similarity alone. For example, one skill may be a broad entry point while another is a fixed workflow; both can be useful, and the better choice depends on how the user works. SkillTriage puts these cases under `需要你决定`, explains the trade-off, and lets the user choose.
 
