@@ -14,7 +14,7 @@
 | [docai-audit](./docai-audit) | 通用 coding agent | 扫描开发文档的 AI 友好度，从 5 个维度评估它是否方便 AI 理解、调用和跑通 |
 | [gen-image-grounding](./gen-image-grounding) | 通用生成类 agent | 生图前先搜索网页和参考图，整理事实、来源、参考图片和风险提示 |
 | [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | 扫描 Hermes 长期记忆里的重复、冲突、过期、范围不清和存在疑似风险的指令型记忆 |
-| [skill-triage](./skill-triage) | Codex / Claude Code | 检查当前 agent 的 skill 库，找出重复、相似或调用边界容易混淆的 skill，并生成可审阅的整理报告 |
+| [skill-triage](./skill-triage) | Codex / Claude Code | 检查当前 agent 的 skill 库，识别重复、相似和边界不清的 skill；用户选择整理后，可把偏好记为后续提示 |
 
 ## 如何安装
 
@@ -42,7 +42,7 @@ cp -r Skill/<skill-name> ~/.codex/skills/
 - 各 skill 的具体依赖见对应文件夹内的 README 或 `SKILL.md`。
 - `coding-music` 仍然依赖 [Claude Code](https://claude.ai/code)、Claude Code hooks、[ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli) 和 `mpv`。
 - `hermes-memory-reconciler` 默认读取 `${HERMES_HOME:-$HOME/.hermes}/memories/` 下的 Hermes 记忆文件，并结合可用的 CLI 或内置指引生成检查报告和整理建议。
-- `skill-triage` 使用 Python 3 标准库脚本扫描本地 skill 文件夹，运行结果写入 `~/.skilltriage/runs/`；生成报告后，由用户决定是否整理已安装的 skill。
+- `skill-triage` 使用 Python 3 标准库脚本扫描本地 skill 文件夹，运行结果写入 `~/.skilltriage/runs/`；生成报告后，由用户决定是否整理已安装的 skill。用户确认后，可以把整理取舍记为偏好，让后续报告更贴近自己的使用习惯。
 
 ---
 
@@ -145,9 +145,11 @@ Agent 的 skill 库用久了以后会自然变多：有些 skill 只用过一两
 
 #### 它做什么
 
-扫描当前 agent runtime 里的 skill，生成事实清单，并把可能重复、相似或调用边界容易混淆的 skill 交给 agent 做进一步评估。最终报告会区分高置信重复、相似但边界清楚、以及范围较宽但暂时不适合直接清理的功能组。
+扫描当前 agent 里的 skill，生成事实清单，并把可能重复、相似或调用边界容易混淆的 skill 交给 agent 进一步评估。报告会把结果分清楚：哪些高度重复，哪些只是功能相近但边界明确，哪些描述太宽、容易让 agent 犹豫。
 
-SkillTriage 会准备报告、建议和恢复说明；删除、归档、覆盖或重写已安装 skill 这类操作，仍需要用户明确决定。
+默认情况下，SkillTriage 只生成报告、建议和恢复说明，不会改动已安装的 skill。你决定继续整理时，它会先列出准备处理的项目；你确认后，才会进入整理执行。插件托管、系统托管和 merge/dedupe 类建议不会自动执行。
+
+SkillTriage 还支持偏好记忆：每次你选择执行整理操作后，它可以根据本次选择生成偏好记忆草稿，等你确认后保存到本地偏好记录。之后再检查 skill 库时，这些偏好会作为提示和排序依据，让报告更贴近你的整理习惯。偏好不会自动清理 skill，也不能替代本次判断。
 
 **使用方式：**
 ```

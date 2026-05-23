@@ -19,10 +19,17 @@ Use this skill to organize the current agent's skill space. The default scope is
 5. Read the generated `inventory.json`, `basic_screening.json`, and `manifest.json`.
 6. Read `references/triage-rules.md`, `references/agent-evaluation-rubric.md`, `references/report-writing.md`, and `references/recovery-model.md`.
 7. Deeply evaluate the skills listed in `basic_screening.json` under `agent_evaluation_skill_ids`. Use `candidate_skill_ids`, `similarity_candidates`, and `capability_groups` only as 基础筛查 routing evidence. For every similarity group and every `tight` / `loose` 相关功能组, perform description-based Agent 调用边界评估: read each relevant description, explain what the Agent understands, identify possible confusing user requests, state the boundary, classify confusion risk, and choose an action. 相似不等于混淆: similar skills with clear service, data, runtime, provider, or task-stage boundaries should be marked 保留, not cleanup targets. Within `capability_groups`, only entries with `status` of `tight` or `loose` are routing signals; entries with `status: "too_broad"` are coverage/noise hints and must not be used to expand the deep-evaluation set. If the runtime and user request allow subagents, use group-level subagents for independent similarity or related-function groups, then have the main agent unify the final report. Do not assign one subagent per individual skill.
-8. Write `agent_evaluation.md`, `report.md`, proposal files, diffs, and `recovery.md` into the run directory.
+8. Write `agent_evaluation.md`, `report.md`, proposal files, diffs, and `recovery.md` into the run directory. If Agent-reviewed trade-offs need the user's habit-based choice, write `decisions/decision_items.json`; use it only for Agent-reviewed trade-offs, not raw 基础筛查 flags.
 9. Before delivery, run a 可读性复核 on `report.md`: make sure the report starts with user decisions, explains the Agent 调用边界评估 judgment basis before tables, groups detailed findings under clear top-level sections, and gives concrete next steps. If it reads like a scanner transcript, rewrite it once.
 10. Tell the user where the run directory is and what to review first.
-11. Ask whether the user wants to enter the optional execution flow:
+11. If `decisions/decision_items.json` exists or `report.md` has `## 需要你决定`, ask whether the user wants to answer those decisions now. This step is for user judgment and optional preference memory, not cleanup execution.
+    - Write `decisions/decision_items.json` only for Agent-reviewed trade-offs, not raw 基础筛查 flags.
+    - If the user answers, write `decisions/user_decisions.json` with matching `run_id` and `runtime`, plus each `decision_id`, `choice`, `remember_preference`, and `created_from_explicit_user_choice: true`.
+    - If any decision has `remember_preference: true`, run `PYTHONPATH=<skill-triage-dir>/scripts python3 <skill-triage-dir>/scripts/manage_preferences.py preview-updates --run-dir <run-dir>`.
+    - Show `decisions/preference_updates.json` to the user and ask before saving anything globally.
+    - Only after the user confirms saving preferences, run `PYTHONPATH=<skill-triage-dir>/scripts python3 <skill-triage-dir>/scripts/manage_preferences.py apply-updates --run-dir <run-dir>`.
+    - 偏好只影响提示和排序，不能自动进入整理执行，也不能替代本次 Agent 评估。
+12. Ask whether the user wants to enter the optional execution flow:
     - Ask clearly: `是否进入整理执行流程？` Default recommendation: read `report.md` first and do not execute immediately.
     - If `backup=off`, do not stage or apply actions. Recommend rerunning with `targeted` or `full` backup before execution.
     - If the user chooses execution, re-read `report.md`, `agent_evaluation.md`, and each relevant proposal. Present executable candidates and ask which actions should be staged.
@@ -38,6 +45,8 @@ Use this skill to organize the current agent's skill space. The default scope is
 
 Execution is opt-in. Never stage, apply, or roll back without explicit user approval in the current conversation. Do not execute merge/dedupe proposals in this iteration; only `archive_skill` and `replace_skill_file` actions are supported. Plugin-managed, system-managed, unknown-source, read-only, and self-scan skills remain non-executable.
 
+Preference memory is not execution approval. A remembered preference must never stage, apply, archive, rewrite, merge, or dedupe anything by itself.
+
 Do not execute scripts from inspected skills. If SkillTriage scans itself, mark it as self-scan and avoid archive, delete, or direct rewrite proposals.
 
 ## Post-Scan Writing Contract
@@ -51,5 +60,8 @@ After the scanner writes JSON artifacts, the current agent writes the Markdown a
 - `proposals/_cross-skill/*.md`: merge, dedupe, archive-candidate, and safety review group notes.
 - `diffs/<skill-name>.patch`: only when `proposed.SKILL.md` changes a writable original file.
 - `recovery.md`: original snapshot mapping and recovery limits.
+- `decisions/decision_items.json`: only when Agent 评估 finds trade-offs that need the user's habit-based choice.
+- `decisions/user_decisions.json`: only when the user answers those trade-offs.
+- `decisions/preference_updates.json`: only after previewing preference updates from explicit user decisions.
 
 Update `manifest.json` with `skilltriage.manifest.add_proposal()` after writing proposals so each proposal links to source path, source hash, proposal path, and snapshot when one exists.

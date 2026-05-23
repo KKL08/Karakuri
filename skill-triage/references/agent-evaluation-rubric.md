@@ -38,3 +38,22 @@ For every similarity group and every `tight` / `loose` 相关功能组, write a 
 - If a group is `too_broad`, do not deep-read every member. Summarize why it is broad, whether it suggests future full-mode review, and whether the descriptions are too generic at the domain level.
 
 The final report should help the user maintain a small and clear skill library, not maximize the number of findings.
+
+## 需要你决定
+
+Use `需要你决定` when the Agent can explain the trade-off, but the right choice depends on the user's habit. These are not high-confidence cleanup items. Do not force an archive, rewrite, merge, or dedupe conclusion just to make the report look decisive.
+
+Use this outcome for decision types such as:
+
+- `general_entry_vs_specialized_workflow`: a broad entrypoint and a narrower workflow both make sense, and the user's preferred way of working decides which one should be primary.
+- `provider_preference`: similar task shape, different provider, service, or workspace.
+- `local_copy_vs_managed_copy`: a local writable copy and a managed/plugin copy both exist, but user trust, customization, and update expectations matter.
+- `personal_workflow_preference`: the trade-off depends on how the user usually asks for work to be done.
+- `description_boundary_unclear`: the safer next step is choosing or rewriting the boundary, not archiving.
+
+Principles:
+
+- Strong evidence is required for high-confidence suggestions.
+- Weak evidence cannot become an archive candidate. 不要强行给出归档结论.
+- `archive_candidate` is a user decision option, not an execution action.
+- Remembered preferences are hints only. They can help wording and ordering, but they cannot replace reading the current descriptions and cannot override this run's Agent 评估.

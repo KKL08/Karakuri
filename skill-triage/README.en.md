@@ -4,7 +4,7 @@
 
 SkillTriage helps an agent review the skills installed in its current runtime. It does a lightweight script-based scan first, then asks the current agent to write a human-readable review of duplicates, similar descriptions, and places where skill invocation boundaries may be unclear.
 
-It is designed for skill library maintenance: keeping a smaller, clearer set of skills without letting a script silently delete or rewrite anything.
+It is designed for skill library maintenance: keeping a smaller, clearer set of skills without letting a script silently delete or rewrite anything. When a choice depends on personal workflow, SkillTriage can ask the user to decide instead of forcing a weak cleanup conclusion.
 
 ## What It Does
 
@@ -14,7 +14,9 @@ It is designed for skill library maintenance: keeping a smaller, clearer set of 
 - Produces reviewable Markdown reports, proposals, and recovery notes.
 - Stops at reports and recommendations by default; it does not change installed skills on its own.
 - If you choose to clean up, the agent must ask you to approve specific items first.
-- Before any write, SkillTriage prepares backups and asks for an explicit confirmation phrase. Applied changes can be rolled back from the run artifacts.
+- Turns confirmed cleanup decisions into preference-memory drafts, then writes them only after user confirmation.
+- Uses confirmed preferences as hints in later reports, so diagnostics and cleanup advice can better match the user over time.
+- Before any write, SkillTriage prepares backups and asks for explicit confirmation. Applied changes can be rolled back from the run artifacts.
 
 ## Supported Runtimes
 
@@ -97,6 +99,13 @@ Important files:
 - `agent_evaluation.md`: the agent's detailed comparison and boundary reasoning.
 - `report.md`: the main user-facing report to read first.
 - `recovery.md`: what was backed up and how recovery would work if future cleanup actions are taken.
+- `decisions/`: user-dependent decisions, the user's current choices, and preference-memory drafts waiting for confirmation.
+
+## User Decisions And Preference Memory
+
+Some cleanup choices cannot be decided from similarity alone. For example, one skill may be a broad entry point while another is a fixed workflow; both can be useful, and the better choice depends on how the user works. SkillTriage puts these cases under `需要你决定`, explains the trade-off, and lets the user choose.
+
+When the user chooses to continue with cleanup decisions, SkillTriage can turn those choices into preference-memory drafts. After confirmation, future reports use those preferences as hints, making diagnostics and cleanup advice better match the user's habits over time. Preferences only affect hints and ordering; they never clean up skills automatically.
 
 ## Optional Cleanup
 
@@ -110,4 +119,4 @@ After changes are applied, the run directory keeps recovery artifacts. You can a
 
 ## Safety
 
-Plugin-managed, system-managed, read-only, unknown-source, and SkillTriage's own files are not executable cleanup targets. Merge and dedupe suggestions remain report-only and are not automatically executed.
+Plugin-managed, system-managed, read-only, unknown-source, and SkillTriage's own files are not executable cleanup targets. Merge and dedupe suggestions remain report-only and are not automatically executed. Preference memory is not execution approval and cannot bypass backup, confirmation, or recovery checks.

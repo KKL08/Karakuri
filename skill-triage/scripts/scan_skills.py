@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +13,7 @@ from skilltriage.constants import BACKUP_POLICIES
 from skilltriage.filesystem import walk_skill_files
 from skilltriage.identity import deduplicate_skill_ids
 from skilltriage.models import SkillRoot
+from skilltriage.preferences import PreferenceError, load_preference_hints
 from skilltriage.screening import analyze_skill_file, build_similarity_candidates
 from skilltriage.run_writer import write_run_artifacts
 
@@ -84,6 +86,14 @@ def _agent_evaluation_skill_ids(
         return selected_ids, unmatched
     ids = [str(skill["skill_id"]) for skill in skills if skill.get("candidate_for_agent_evaluation") and not skill.get("is_self")]
     return sorted(set(ids + selected_ids)), unmatched
+
+
+def _load_preference_hints(runtime: str) -> list[dict[str, object]]:
+    try:
+        return load_preference_hints(runtime)
+    except (PreferenceError, OSError, json.JSONDecodeError) as exc:
+        print(f"Preference hints unavailable: {exc}", file=sys.stderr)
+        return []
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -164,6 +174,7 @@ def main(argv: list[str] | None = None) -> int:
     run_id = args.run_id or datetime.now().strftime("%Y-%m-%d-%H%M%S")
     output_base = Path(args.output_root).expanduser() if args.output_root else adapter.default_output_dir().parent
     run_dir = output_base / adapter.runtime_id / run_id
+    preference_hints = _load_preference_hints(adapter.runtime_id)
     write_run_artifacts(
         run_dir=run_dir,
         runtime=adapter.runtime_id,
@@ -178,6 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         selected_skills=args.select_skill,
         agent_evaluation_skill_ids=agent_evaluation_skill_ids,
         capability_groups=capability_groups,
+        preference_hints=preference_hints,
     )
     print(str(run_dir))
     return 0

@@ -42,9 +42,10 @@ def write_run_artifacts(
     selected_skills: list[str],
     agent_evaluation_skill_ids: list[str],
     capability_groups: list[dict[str, object]],
+    preference_hints: list[dict[str, object]],
 ) -> None:
     run_dir.mkdir(parents=True, exist_ok=False)
-    for dirname in ("originals", "proposals", "diffs"):
+    for dirname in ("originals", "proposals", "diffs", "decisions"):
         (run_dir / dirname).mkdir()
 
     agent_eval_id_set = set(agent_evaluation_skill_ids)
@@ -68,6 +69,7 @@ def write_run_artifacts(
         "evaluation_scope": evaluation_scope,
         "selected_skills": selected_skills,
         "agent_evaluation_skill_ids": agent_evaluation_skill_ids,
+        "preference_hints": preference_hints,
     }
     manifest = {
         "run_id": run_id,
@@ -92,6 +94,7 @@ def write_run_artifacts(
         ],
         "snapshots": snapshots,
         "proposals": [],
+        "preference_hints": preference_hints,
     }
     _write_json(run_dir / "inventory.json", inventory)
     _write_json(run_dir / "basic_screening.json", basic_screening)

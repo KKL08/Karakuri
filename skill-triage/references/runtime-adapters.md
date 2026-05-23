@@ -2,7 +2,7 @@
 
 Adapters discover skills for one runtime and normalize them into the same inventory shape. Codex and Claude Code are the first adapters. Future runtimes add a new adapter file without changing report, proposal, or recovery output formats.
 
-Supported Claude Code plugin layouts include:
+Known Claude Code plugin layouts include:
 
 - `~/.claude/plugins/marketplaces/<plugin>/SKILL.md`
 - `~/.claude/plugins/marketplaces/<plugin>/skills/<skill>/SKILL.md`

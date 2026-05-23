@@ -14,7 +14,7 @@ Each skill is organized around one concrete workflow. The main instructions live
 | [docai-audit](./docai-audit) | Portable coding agents | Reviews developer docs for AI readiness across 5 dimensions: understanding, integration, execution, recovery, and agent usability |
 | [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches the web and image sources before generation, then organizes facts, sources, reference images, and warnings |
 | [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans Hermes long-term memory for duplicates, conflicts, stale notes, unclear scope, and potentially risky instruction-style memories |
-| [skill-triage](./skill-triage) | Codex and Claude Code | Reviews installed skills, finds duplicates or confusing overlaps, and writes reviewable cleanup reports |
+| [skill-triage](./skill-triage) | Codex and Claude Code | Reviews installed skills, finds duplicates or unclear boundaries, and can remember explicit cleanup preferences as future hints |
 
 ## How to Install a Skill
 
@@ -42,7 +42,7 @@ After copying, restart or reload the target agent runtime if it does not hot-loa
 - Skill-specific dependencies listed in each skill's README or `SKILL.md`.
 - `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
 - `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/` and uses the available CLI or built-in guidance to produce an inspection report and cleanup recommendations.
-- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and stops at reports by default. If the user chooses to clean up, it prepares backups, asks for explicit confirmation, and keeps rollback materials.
+- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and stops at reports by default. If the user chooses to clean up, it prepares backups, asks for explicit confirmation, keeps rollback materials, and can remember explicit cleanup preferences for future reports.
 
 ---
 
@@ -145,7 +145,9 @@ Agent skill libraries tend to grow over time. Some skills are used once and forg
 
 #### What it does
 
-Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, and calls out broad groups that may need future attention.
+Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, user-dependent decisions, and broad groups that may need future attention.
+
+When the user chooses to continue with cleanup decisions, SkillTriage can turn those choices into preference-memory drafts. After the user confirms them, future reports can use those preferences as hints, helping the skill diagnosis and cleanup advice better match the user's habits over time. Preferences affect report hints and ordering only; they never archive, rewrite, merge, or dedupe skills by themselves.
 
 SkillTriage prepares reports, proposals, and recovery notes by default. If the user explicitly chooses to clean up, it asks for item-by-item approval and prepares backups before writing; plugin-managed, system-managed, merge, and dedupe suggestions are not automatically executed.
 
