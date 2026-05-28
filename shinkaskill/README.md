@@ -1,23 +1,38 @@
 # ShinkaSkill
 
-ShinkaSkill 用来检查 Agent Skill 的质量。它读取用户指定的 skill，检查 `SKILL.md`、触发描述、引用文件、运行边界和可维护性，并生成中文报告。
+ShinkaSkill 用来检查单个 Agent Skill。它适合放在发布前、重构后，或发现某个 skill 表现不稳定时使用，帮助维护者判断这份 skill 是否写清楚、是否容易被 agent 正确触发、是否缺少必要材料，以及真实运行时可能卡在哪里。
 
-如果需要更接近真实使用的判断，ShinkaSkill 可以启动 Codex 或 Claude Code 的独立 agent 进程运行 eval。eval 结束后，grader 会逐项打分，comparator 会做 A/B 对比，报告会把证据、分数和风险写清楚。
+它默认只读，不会扫描 home 目录，也不会在未授权时修改原始 skill。检查结果会整理成中文报告，里面有评分、证据、风险和改进建议，方便继续修改或交给别人审阅。
 
-默认情况下，ShinkaSkill 只读文件。它不会扫描用户的 home 目录，也不会在未授权时修改原始 skill。
+## 解决的问题
 
-## 能做什么
+写一个 skill 不难，难的是判断它在真实 agent 里是否好用。常见问题包括：描述看起来完整，但触发条件不够明确；引用文件和脚本放散了，agent 运行时找不到；权限、失败处理和边界说明太少；只有人工感觉，没有可复查的评分和证据。
 
-- 检查 `SKILL.md`、frontmatter、引用文件、脚本路径和常见风险。
-- 按 profile 给出 0-100 的静态评分，支持 `general`、`agent-skills`、`text-only`、`workflow`、`scripted`。
-- 生成中文 Markdown 报告；使用 `--json` 时输出稳定 JSON。
-- 创建本地 eval run，保存 `original/`、`sandbox/`、`eval-results.json` 和 `eval-report.md`。
-- 通过 `codex` 或 `claude-code` adapter 启动真实 agent eval。
-- eval 后运行独立 grader 和 comparator，在报告中展示 rubric 打分和 A/B 判断。
-- 通过 `--consent-json` 输出结构化授权请求，方便上层 agent 转成按钮式确认。
-- 使用 `clean` 清理历史 run。
+ShinkaSkill 把这些判断拆成一份可读报告。维护者不用反复手工翻 `SKILL.md`，也不用只靠「看起来还行」做决定。
 
-`propose` 和 `apply` 目前还是安全入口。命令会说明边界，但不会生成 patch，也不会写回原始 skill。自动优化和写回会在后续版本补上。
+## 使用流程
+
+推荐从只读检查开始：
+
+1. 准备一份要检查的 skill 路径。
+2. 运行 `inspect`，先得到静态报告。
+3. 根据报告修正触发描述、引用文件、权限说明或使用步骤。
+4. 如果需要更接近真实使用的判断，再授权运行真实 eval。
+5. 查看 eval 报告里的逐项评分、运行证据和对比结果。
+
+真实 eval 会把被测 skill 复制到本次 run 的 sandbox，再通过 Codex 或 Claude Code 启动独立 agent 任务。这个步骤需要用户明确同意；当前环境暂时不能运行真实 eval 时，可以先使用静态报告。
+
+## 会得到什么
+
+ShinkaSkill 会产出这些材料：
+
+- 一份中文 Markdown 检查报告，说明当前 skill 的主要问题、评分、证据和改进建议。
+- 一个 0-100 的总分，以及按维度拆开的 rubric 评分。
+- 可选 JSON 输出，方便接入其他工具或自动化流程。
+- 真实 eval run 目录，包含被测 skill 的副本、运行结果和 `eval-report.md`。
+- 如果运行了真实 eval，报告会包含 grader 逐项打分和 comparator 对比结果。
+
+`propose` 和 `apply` 目前还是安全入口，不会生成 patch，也不会写回原始 skill。自动优化和写回会在后续版本补上。
 
 ## 安装
 
@@ -62,7 +77,7 @@ npm run shinka -- inspect <skill-path>
 npm run shinka -- inspect <skill-path> --profile workflow
 ```
 
-创建 eval run。默认 adapter 是 `generic`，只会写入 unavailable，不会启动真实 agent：
+创建 eval run。默认模式只记录当前环境不能运行真实 agent 的原因，不会假装已经完成真实 eval：
 
 ```bash
 npm run shinka -- eval <skill-path> --yes
