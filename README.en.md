@@ -37,7 +37,7 @@ Restart the agent runtime after copying if it doesn't pick up new skills automat
 
 ## Skills
 
-### coding-music `0.1 beta`
+### Coding Music `0.1 beta`
 
 When an AI agent is doing the heavy lifting, your job is mostly reviewing and confirming. Permission prompts and key decisions need your attention; the rest of the time you can have music on.
 
@@ -51,7 +51,7 @@ Requires [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), `mpv`, Pyth
 
 ---
 
-### coding-agent-fit
+### Coding Agent Fit
 
 Give it a docs URL for any cloud service or developer tool. It returns an integration report: how smoothly a Coding Agent can get from docs to working code, where it's likely to get stuck, and what the service should fix first.
 
@@ -65,7 +65,7 @@ Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agen
 
 ---
 
-### gen-image-grounding `0.1 beta`
+### Gen Image Grounding `0.1 beta`
 
 For prompts involving real people, places, products, logos, or anything that needs factual accuracy — searches the web and image sources first, then hands structured results to the image model.
 
@@ -79,7 +79,7 @@ See [gen-image-grounding/README.md](./gen-image-grounding/README.md) for provide
 
 ---
 
-### hermes-memory-reconciler `0.2 beta`
+### Hermes Memory Reconciler `0.2 beta`
 
 Long-term memory gets messy: preferences conflict, facts go stale, old conclusions keep steering behavior, risky instructions slip through. This skill scans Hermes `USER.md` and `MEMORY.md`, surfaces the problems, and asks targeted questions to build a cleanup proposal. Nothing changes until you say so.
 
@@ -91,7 +91,7 @@ Reads from `${HERMES_HOME:-$HOME/.hermes}/memories/`. See [hermes-memory-reconci
 
 ---
 
-### shinkaskill `0.1 beta`
+### ShinkaSkill `0.1 beta`
 
 Pre-publish quality check for a single skill. Reads `SKILL.md`, referenced files, and scripts; checks structure, trigger clarity, and completeness; scores each rubric dimension with evidence. Optionally runs real eval via Codex or Claude Code subagents.
 
@@ -105,7 +105,7 @@ See [shinkaskill/README.md](./shinkaskill/README.md) for installation and CLI us
 
 ---
 
-### skill-triage `0.3 beta`
+### SkillTriage `0.3 beta`
 
 As you install more skills over time, some end up with overlapping descriptions or unclear boundaries — the agent hesitates when picking which one to call.
 
