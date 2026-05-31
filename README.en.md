@@ -13,7 +13,7 @@ Skills are portable by default. Runtime-specific or tool-specific dependencies a
 | Skill | Best Fit | Description |
 |-------|----------|-------------|
 | [coding-music](./coding-music) | Claude Code | Plays your favorite music while coding; pauses when Claude asks for permission and resumes after you confirm |
-| [docai-audit](./docai-audit) | Portable coding agents | Reviews developer docs for AI readiness across 5 dimensions: understanding, integration, execution, recovery, and agent usability |
+| [coding-agent-fit](./coding-agent-fit) | Portable coding agents | Evaluates whether a service, API platform, or developer tool is practical for Coding Agent integration |
 | [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches the web and image sources before generation, then organizes facts, sources, reference images, and warnings |
 | [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans Hermes long-term memory for duplicates, conflicts, stale notes, unclear scope, and potentially risky instruction-style memories |
 | [shinkaskill](./shinkaskill) | Codex and Claude Code | Reviews a single Agent Skill, scores structure and runtime behavior, and produces Chinese-first reports with suggested fixes |
@@ -73,30 +73,28 @@ Built on NetEase Music's official CLI ([ncm-cli](https://www.npmjs.com/package/@
 
 ---
 
-### docai-audit
+### coding-agent-fit
 
 #### Background
 
-As Cursor, Claude Code, and Codex become common development tools, developers increasingly hand documentation to an AI agent and ask it to produce working integration code. That changes what good developer documentation needs to support.
+As Claude Code, Cursor, Codex, and Trae become common development tools, developers increasingly ask agents to find service docs, read integration material, and write working code.
 
-The practical question becomes simple: can an AI agent understand these docs, call the right APIs, recover from common errors, and get to a working result?
-
-docai-audit answers that.
+This skill checks whether a service gives agents enough entry points, docs, APIs, SDKs, CLI commands, MCP tools, and Skills to complete a real integration.
 
 #### What it does
 
-Give it a cloud service or developer tool documentation URL, and it returns a quantified report on how well that documentation supports AI coding and agent integration.
+Give it a cloud service or developer tool documentation URL, and it returns an integration report: how smoothly a Coding Agent can proceed, where it is likely to get stuck, and what the service team should improve first.
 
 Good for:
 
-- **DevRel / docs teams**: find the gaps that make your docs harder for AI agents to use
-- **Agent developers**: quickly judge whether a platform is suitable for AI-assisted integration
+- **DevRel / docs teams**: check how well a service supports Coding Agent integration
+- **Agent developers**: quickly judge whether a platform is suitable for agent-assisted integration
 
-The score covers 5 dimensions focused on the main points where AI-driven integration usually succeeds or breaks down.
+The score covers 5 dimensions: service entry points, integration docs, agent helper tools, integration friction, and maintenance signals.
 
 **Usage:**
 ```
-/docai-audit https://resend.com/docs
+/coding-agent-fit https://resend.com/docs
 ```
 
 ---

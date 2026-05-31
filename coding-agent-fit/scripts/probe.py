@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DocAI Audit — URL Resource Prober
+Coding Agent readiness — URL resource prober
 
 Probe a documentation site for AI-readable indexes, API specs, MCP/agent
 discovery files, Markdown access, and page/index signals.
@@ -53,6 +53,16 @@ PROBE_TARGETS = [
         "max_content": 50_000,
     },
     {
+        "resource_type": "oauth_authorization_server",
+        "paths": ["/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"],
+        "max_content": 100_000,
+    },
+    {
+        "resource_type": "oauth_protected_resource",
+        "paths": ["/.well-known/oauth-protected-resource"],
+        "max_content": 100_000,
+    },
+    {
         "resource_type": "api_catalog",
         "paths": ["/.well-known/api-catalog", "/api-catalog"],
         "max_content": 100_000,
@@ -68,6 +78,11 @@ PROBE_TARGETS = [
         "max_content": 50_000,
     },
     {
+        "resource_type": "security_txt",
+        "paths": ["/.well-known/security.txt", "/security.txt"],
+        "max_content": 50_000,
+    },
+    {
         "resource_type": "mint_json",
         "paths": ["/mint.json"],
         "max_content": 100_000,
@@ -76,7 +91,7 @@ PROBE_TARGETS = [
 
 TIMEOUT = 10
 PREVIEW_LIMIT = 2000
-USER_AGENT = "DocAI-Audit-Probe/2.0"
+USER_AGENT = "Coding-Agent-Fit-Probe/1.0"
 
 _ssl_ctx = ssl.create_default_context()
 _ssl_ctx.check_hostname = False
@@ -145,10 +160,21 @@ def is_usable_resource(result: dict, resource_type: str) -> bool:
         return "sitemap" in text[:500].lower() or "<urlset" in text[:500].lower()
     if resource_type == "llms_txt":
         return "text/html" not in content_type and ("# " in text[:200] or "- [" in text[:500])
-    if resource_type in {"openapi", "mcp_json", "mcp_server_card", "agent_skills", "api_catalog", "mint_json"}:
+    if resource_type in {
+        "openapi",
+        "mcp_json",
+        "mcp_server_card",
+        "agent_skills",
+        "oauth_authorization_server",
+        "oauth_protected_resource",
+        "api_catalog",
+        "mint_json",
+    }:
         return "text/html" not in content_type and text.strip() not in {"", "null", "Asset not found"}
     if resource_type == "robots_txt":
         return "user-agent" in text[:500].lower()
+    if resource_type == "security_txt":
+        return "contact:" in text[:1000].lower()
     return "text/html" not in content_type
 
 
@@ -294,6 +320,30 @@ def probe_page_markdown(input_url: str) -> dict:
     }
 
 
+def probe_index_markdown(input_url: str) -> dict:
+    attempts = []
+    for base in candidate_bases(input_url):
+        url = f"{base['base_url'].rstrip('/')}/index.md"
+        result = fetch(url, max_content=100_000)
+        exists = result["ok"] and "text/html" not in result.get("content_type", "").lower()
+        attempt = preview_result(result, exists, source=base["label"])
+        attempts.append(attempt)
+        if exists:
+            attempt["attempts"] = attempts_snapshot(attempts)
+            return attempt
+
+    fallback = attempts[0] if attempts else {"url": None}
+    return {
+        "exists": False,
+        "url": fallback.get("url"),
+        "status": fallback.get("status"),
+        "content_type": fallback.get("content_type"),
+        "source": fallback.get("source"),
+        "content_preview": None,
+        "attempts": attempts,
+    }
+
+
 def extract_llms_signals(llms_result: dict) -> dict:
     text = llms_result.get("content_preview") or ""
     for attempt in llms_result.get("attempts", []):
@@ -313,6 +363,11 @@ def extract_llms_signals(llms_result: dict) -> dict:
         "ai_coding": r"claude code|cursor|codex|cline|opencode|roo code|ai 编程|agent",
         "openapi": r"openapi|swagger",
         "sdk": r"\bsdk\b",
+        "skill": r"\bskill\b|agent skill|agents\.md|\.cursor/rules|prompt pack|rules",
+        "auth": r"auth|oauth|api key|token|鉴权|认证|权限",
+        "rate_limit": r"rate limit|quota|retry|限流|额度|重试",
+        "errors": r"error code|status code|troubleshoot|错误码|状态码|排障",
+        "changelog": r"changelog|release notes|deprecat|migration|变更|弃用|迁移",
     }
     links = re.findall(r"- \[([^\]]+)\]\(([^)]+)\)(?::\s*([^\n]+))?", text)
     signal_links = {}
@@ -325,6 +380,58 @@ def extract_llms_signals(llms_result: dict) -> dict:
         ]
         signal_links[key] = {"count": len(matches), "sample": matches[:10]}
     return signal_links
+
+
+def extract_page_signals(input_url: str) -> dict:
+    result = fetch(input_url, max_content=250_000)
+    text = result.get("text", "")
+    patterns = {
+        "developer_entry": r"developer|docs|documentation|api reference|开发者|文档|接口",
+        "quickstart": r"quickstart|get started|getting started|快速开始|入门",
+        "cli": r"\bcli\b|command line|命令行|npm install|brew install|pip install",
+        "mcp": r"mcp|model context protocol",
+        "skill": r"\bskill\b|agent skill|agents\.md|\.cursor/rules|prompt pack|rules",
+        "agent_tools": r"claude code|cursor|codex|cline|windsurf|copilot|vs code",
+        "openapi": r"openapi|swagger|api catalog",
+        "auth": r"auth|oauth|api key|token|鉴权|认证|权限",
+        "rate_limit": r"rate limit|quota|retry|限流|额度|重试",
+        "errors": r"error code|status code|troubleshoot|错误码|状态码|排障",
+        "status": r"status page|system status|service status|状态页|服务状态",
+        "changelog": r"changelog|release notes|deprecat|migration|变更|弃用|迁移",
+        "pricing_limits": r"pricing|billing|quota|region|plan|计费|套餐|地区",
+    }
+    signals = {}
+    for key, pattern in patterns.items():
+        regex = re.compile(pattern, re.IGNORECASE)
+        matches = regex.findall(text)
+        signals[key] = {"exists": bool(matches), "count": len(matches)}
+    return {
+        "url": result.get("url"),
+        "status": result.get("status"),
+        "content_type": result.get("content_type"),
+        "signals": signals,
+    }
+
+
+def extract_robots_signals(robots_result: dict) -> dict:
+    text = robots_result.get("content_preview") or ""
+    if robots_result.get("exists") and robots_result.get("url"):
+        fetched = fetch(robots_result["url"], max_content=100_000)
+        if fetched["ok"]:
+            text = fetched["text"]
+
+    patterns = {
+        "ai_bots": r"gptbot|chatgpt-user|claudebot|anthropic-ai|perplexitybot|ccbot|google-extended",
+        "agent_policy": r"ai|agent|llm|training|crawl|content signal|use policy",
+        "disallow": r"disallow:",
+    }
+    return {
+        key: {
+            "exists": bool(re.search(pattern, text, re.IGNORECASE)),
+            "count": len(re.findall(pattern, text, re.IGNORECASE)),
+        }
+        for key, pattern in patterns.items()
+    }
 
 
 def normalize_input(raw_url: str) -> str:
@@ -347,6 +454,7 @@ def main():
     probes = {
         "candidate_bases": bases,
         "page_markdown": probe_page_markdown(input_url),
+        "index_markdown": probe_index_markdown(input_url),
         "response_headers": probe_headers(input_url, bases),
     }
 
@@ -360,6 +468,8 @@ def main():
             probes[resource_type] = result
 
     probes["llms_index_signals"] = extract_llms_signals(probes.get("llms_txt", {}))
+    probes["page_signals"] = extract_page_signals(input_url)
+    probes["robots_signals"] = extract_robots_signals(probes.get("robots_txt", {}))
 
     output = {
         "input_url": input_url,
