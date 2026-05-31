@@ -2,26 +2,22 @@
 
 [中文版](./README.md)
 
-This repo provides AI Agent skills for general agent runtimes such as Claude Code, Codex, Hermes, and OpenClaw.
+A collection of AI Agent skills for Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtimes.
 
-Each skill maps to a concrete workflow. `SKILL.md` contains the core instructions, and the related references, templates, and scripts live in the same directory. When a similar task comes up, the agent can reuse the whole workflow instead of rebuilding it from scratch.
-
-Skills are portable by default. Runtime-specific or tool-specific dependencies are called out in each skill's notes.
+Each skill is a self-contained folder. `SKILL.md` holds the core instructions; references, templates, and scripts live alongside it. Drop a skill into your agent's skill directory and it works out of the box — no per-task setup needed. Skills are runtime-agnostic unless noted otherwise.
 
 ## Available Skills
 
-| Skill | Best Fit | Description |
-|-------|----------|-------------|
-| [coding-music](./coding-music) | Claude Code | Plays your favorite music while coding; pauses when Claude asks for permission and resumes after you confirm |
-| [coding-agent-fit](./coding-agent-fit) | Portable coding agents | Evaluates whether a service, API platform, or developer tool is practical for Coding Agent integration |
-| [gen-image-grounding](./gen-image-grounding) | Portable generation agents | Searches the web and image sources before generation, then organizes facts, sources, reference images, and warnings |
-| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Scans Hermes long-term memory for duplicates, conflicts, stale notes, unclear scope, and potentially risky instruction-style memories |
-| [shinkaskill](./shinkaskill) | Codex and Claude Code | Reviews a single Agent Skill, scores structure and runtime behavior, and produces Chinese-first reports with suggested fixes |
-| [skill-triage](./skill-triage) | Codex and Claude Code | Reviews installed skills, finds duplicates or unclear boundaries, and can remember explicit cleanup preferences as future hints |
+| Skill | Best For | What It Does |
+|-------|----------|--------------|
+| [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
+| [coding-agent-fit](./coding-agent-fit) | Any coding agent | Scores how well a cloud service or dev tool supports Coding Agent integration |
+| [gen-image-grounding](./gen-image-grounding) | Any generation agent | Searches for facts and visual references before image generation |
+| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Finds duplicates, conflicts, stale entries, and risky instructions in long-term memory |
+| [shinkaskill](./shinkaskill) | Codex / Claude Code | Quality-checks a single skill's structure, trigger description, and eval results |
+| [skill-triage](./skill-triage) | Codex / Claude Code | Finds duplicates and unclear boundaries across an installed skill library |
 
-## How to Install a Skill
-
-Each skill is a folder. Copy the folder you need into the skill directory used by your agent runtime:
+## Installation
 
 ```bash
 git clone https://github.com/KKL08/Skill.git
@@ -30,43 +26,25 @@ git clone https://github.com/KKL08/Skill.git
 mkdir -p ~/.claude/skills
 cp -r Skill/<skill-name> ~/.claude/skills/
 
-# Codex local skills
+# Codex
 mkdir -p ~/.codex/skills
 cp -r Skill/<skill-name> ~/.codex/skills/
 ```
 
-For Hermes, OpenClaw, or another runtime, use that runtime's configured skill/plugin directory, or import the entire folder as a Markdown instruction pack. If the skill includes `agents/<runtime>.yaml`, `references/`, or `scripts/`, keep those files together with `SKILL.md`.
+For Hermes, OpenClaw, or other runtimes, copy the folder to the runtime's skill/plugin directory or import it as a Markdown instruction pack. Keep `agents/<runtime>.yaml`, `references/`, and `scripts/` together with `SKILL.md`.
 
-After copying, restart or reload the target agent runtime if it does not hot-load skills.
+Restart the agent runtime after copying if it doesn't pick up new skills automatically.
 
-## Requirements
-
-- An agent runtime that can load `SKILL.md` skill folders, or that lets you reference Markdown instruction folders.
-- Skill-specific dependencies listed in each skill's README or `SKILL.md`.
-- `coding-music` specifically requires [Claude Code](https://claude.ai/code), Claude Code hooks, [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), and `mpv`.
-- `hermes-memory-reconciler` assumes Hermes memory files under `${HERMES_HOME:-$HOME/.hermes}/memories/` and uses the available CLI or built-in guidance to produce an inspection report and cleanup recommendations.
-- `shinkaskill` requires Node.js 20+. Static checks do not require an external agent. Real eval requires an authenticated Codex CLI or Claude Code CLI in the current environment. If real eval cannot run in the current environment, start with the static report.
-- `skill-triage` uses Python 3 standard-library scripts to scan local skill folders. It writes run artifacts under `~/.skilltriage/runs/` and stops at reports by default. If the user chooses to clean up, it prepares backups, asks for explicit confirmation, keeps rollback materials, and can remember explicit cleanup preferences for future reports.
-
----
-
-## Skill Details
+## Skills
 
 ### coding-music `0.1 beta`
 
-#### Background
+When an AI agent is doing the heavy lifting, your job is mostly reviewing and confirming. Permission prompts and key decisions need your attention; the rest of the time you can have music on.
 
-As AI agents take on more day-to-day coding work, your attention moves toward review, decisions, and direction. When Claude needs you for a permission prompt or an important choice, that moment should be easy to notice. When Claude is working on its own, you can keep your music going.
+Plays your NetEase Music liked songs while coding. Auto-pauses on permission prompts, resumes when you confirm. Optional: also pause when Claude finishes a response.
 
-#### What it does
+Requires [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), `mpv`, Python 3, Node.js 18+. See [coding-music/README.md](./coding-music/README.md) for setup.
 
-Plays your favorite music while you code. When Claude needs your input, the music pauses automatically and resumes once you confirm. No window switching, no taking off your headphones; your focus and rhythm stay intact.
-
-Optionally, it can also pause whenever Claude finishes a response; you decide when to pick back up.
-
-Built on NetEase Music's official CLI ([ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli)) and Claude Code's hook system.
-
-**Usage:**
 ```
 /coding-music
 ```
@@ -75,24 +53,12 @@ Built on NetEase Music's official CLI ([ncm-cli](https://www.npmjs.com/package/@
 
 ### coding-agent-fit
 
-#### Background
+Give it a docs URL for any cloud service or developer tool. It returns an integration report: how smoothly a Coding Agent can get from docs to working code, where it's likely to get stuck, and what the service should fix first.
 
-As Claude Code, Cursor, Codex, and Trae become common development tools, developers increasingly ask agents to find service docs, read integration material, and write working code.
+Scores 5 dimensions: service discovery, docs quality, agent tooling (CLI/MCP/Skill), integration friction, and maintenance signals. Useful for DevRel teams running self-checks and for agent developers evaluating platforms.
 
-This skill checks whether a service gives agents enough entry points, docs, APIs, SDKs, CLI commands, MCP tools, and Skills to complete a real integration.
+Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for scoring details.
 
-#### What it does
-
-Give it a cloud service or developer tool documentation URL, and it returns an integration report: how smoothly a Coding Agent can proceed, where it is likely to get stuck, and what the service team should improve first.
-
-Good for:
-
-- **DevRel / docs teams**: check how well a service supports Coding Agent integration
-- **Agent developers**: quickly judge whether a platform is suitable for agent-assisted integration
-
-The score covers 5 dimensions: service entry points, integration docs, agent helper tools, integration friction, and maintenance signals.
-
-**Usage:**
 ```
 /coding-agent-fit https://resend.com/docs
 ```
@@ -101,17 +67,12 @@ The score covers 5 dimensions: service entry points, integration docs, agent hel
 
 ### gen-image-grounding `0.1 beta`
 
-#### Background
+For prompts involving real people, places, products, logos, or anything that needs factual accuracy — searches the web and image sources first, then hands structured results to the image model.
 
-Image generation prompts that depend on real people, places, events, products, logos, outfits, architecture, posters, or readable text work better when facts and visual references are gathered first. gen-image-grounding prepares that grounding before the image model is called.
+Outputs `gen_prompt`, `reference_images`, `facts`, `sources`, and `warnings`. Supports Serper, Volcengine, Tavily, Firecrawl, and Jina. Requires Python 3; runs in plan-only mode without API keys.
 
-#### What it does
+See [gen-image-grounding/README.md](./gen-image-grounding/README.md) for provider setup and output format.
 
-It plans search queries, collects web and image evidence through configured providers, downloads reference images, and outputs `gen_prompt`, `reference_images`, `facts`, `sources`, and `warnings` for downstream image models.
-
-Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configured by environment variables.
-
-**Usage:**
 ```
 /gen-image-grounding
 ```
@@ -120,19 +81,10 @@ Providers include Serper, Volcengine, Tavily, Firecrawl, and Jina when configure
 
 ### hermes-memory-reconciler `0.2 beta`
 
-#### Background
+Long-term memory gets messy: preferences conflict, facts go stale, old conclusions keep steering behavior, risky instructions slip through. This skill scans Hermes `USER.md` and `MEMORY.md`, surfaces the problems, and asks targeted questions to build a cleanup proposal. Nothing changes until you say so.
 
-Long-term agent memory gets messy over time. User preferences can conflict, project facts can become stale, old conclusions can keep steering behavior, and risky prompt-like instructions can accidentally stay in memory. Hermes memory is especially sensitive because it affects how the agent understands the user in future sessions.
+Reads from `${HERMES_HOME:-$HOME/.hermes}/memories/`. See [hermes-memory-reconciler/README.md](./hermes-memory-reconciler/README.md) for the full workflow and CLI commands.
 
-hermes-memory-reconciler reviews the memory set, identifies issues, and turns them into a clear report that helps the user decide which memories should be merged, updated, or removed. It does not change long-term memory without the user's awareness; when a conflict can affect future behavior, it leaves that decision to the user.
-
-#### What it does
-
-Scans Hermes `USER.md` and `MEMORY.md`. It looks for exact duplicates, preference conflicts, profile conflicts, unclear scope, possible stale memories, and potentially risky instruction-style memories.
-
-It asks targeted questions to help prioritize how conflicting memories should be handled. After the user makes a decision, it produces a memory cleanup proposal that explains which items should be added, replaced, or removed.
-
-**Usage:**
 ```
 /hermes-memory-reconciler
 ```
@@ -141,21 +93,12 @@ It asks targeted questions to help prioritize how conflicting memories should be
 
 ### shinkaskill `0.1 beta`
 
-#### Background
+Pre-publish quality check for a single skill. Reads `SKILL.md`, referenced files, and scripts; checks structure, trigger clarity, and completeness; scores each rubric dimension with evidence. Optionally runs real eval via Codex or Claude Code subagents.
 
-ShinkaSkill reviews one Agent Skill at a time. It checks whether a skill is ready to publish or iterate on: whether `SKILL.md` explains the trigger and workflow clearly, whether referenced files and scripts exist, and whether permissions, failure handling, and real eval have clear boundaries.
+Differs from skill-triage: shinkaskill looks at one skill in depth, skill-triage looks across the whole library. Requires Node.js 20+.
 
-For library-wide scans, duplicate skills, and accidental trigger overlap, use [skill-triage](./skill-triage). ShinkaSkill stays focused on the target skill and turns structure, references, runtime behavior, scores, evidence, and suggested fixes into a report.
+See [shinkaskill/README.md](./shinkaskill/README.md) for installation and CLI usage.
 
-#### What it does
-
-ShinkaSkill accepts one or more skill paths, but each report is generated per skill. It reads `SKILL.md`, frontmatter, referenced files, and scripts, then checks structure, trigger wording, progressive disclosure, consent notes, runtime assumptions, and maintainability. Reports are Chinese-first and score each rubric dimension.
-
-With explicit approval, ShinkaSkill can copy the tested skill into a run sandbox, start Codex or Claude Code subagents for eval prompts, then add grader and comparator results to the report. The report separates static checks from real eval. If real eval cannot run in the current environment, it says why.
-
-The default mode is read-only and does not modify the original skill. `propose` and `apply` are separate entry points, and any future writeback requires a fresh user confirmation.
-
-**Usage:**
 ```
 /shinkaskill
 ```
@@ -164,19 +107,12 @@ The default mode is read-only and does not modify the original skill. `propose` 
 
 ### skill-triage `0.3 beta`
 
-#### Background
+As you install more skills over time, some end up with overlapping descriptions or unclear boundaries — the agent hesitates when picking which one to call.
 
-Agent skill libraries tend to grow over time. Some skills are used once and forgotten; others overlap in description or task scope, making it harder for the agent to decide which one to call. SkillTriage turns that messy skill space into a reviewable maintenance report.
+Scans the current agent's skill library, separates true duplicates from similar-but-distinct skills, and flags descriptions that are too broad. Reports only by default; cleanup requires explicit confirmation. Supports preference memory so future reports better match your habits.
 
-#### What it does
+Requires Python 3 standard library. See [skill-triage/README.md](./skill-triage/README.md) for usage and output format.
 
-Scans the current agent runtime's skills, records a factual inventory, and routes likely duplicates or confusingly similar skills into Agent evaluation. The final report separates high-confidence duplicates from related-but-clearly-bounded skills, user-dependent decisions, and broad groups that may need future attention.
-
-When the user chooses to continue with cleanup decisions, SkillTriage can turn those choices into preference-memory drafts. After the user confirms them, future reports can use those preferences as hints, helping the skill diagnosis and cleanup advice better match the user's habits over time. Preferences affect report hints and ordering only; they never archive, rewrite, merge, or dedupe skills by themselves.
-
-SkillTriage prepares reports, proposals, and recovery notes by default. If the user explicitly chooses to clean up, it asks for item-by-item approval and prepares backups before writing; plugin-managed, system-managed, merge, and dedupe suggestions are not automatically executed.
-
-**Usage:**
 ```
 /skill-triage
 ```
