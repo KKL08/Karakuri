@@ -2,7 +2,7 @@
 
 [English](./README.en.md)
 
-这个仓库里几个 AI Agent skill，面向在 Claude Code、Codex、Hermes、OpenClaw 等通用 Agent 上做开发的工程师。每个 skill 解决一类高频场景，安装后即开即用。
+这个仓库是一些 AI Agent skill 合集，面向在 Claude Code、Codex、Hermes、OpenClaw 等通用 Agent 使用。
 
 每个 skill 是一个独立文件夹：`SKILL.md` 是核心指令，参考资料、模板和脚本放在同一目录下。agent 遇到同类任务时整套复用，不用每次重新搭。不绑定特定 runtime；有额外依赖的会单独注明。
 
