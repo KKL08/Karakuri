@@ -1,34 +1,80 @@
-# coding-music — Claude Code Skill
+# coding-music —— 写代码时有 BGM 🎧
 
-在用 Claude Code 写代码时，自动播放你的网易云音乐红心歌曲。Claude 弹出权限确认框时自动暂停，确认后立即恢复，不打断你的状态。
+边写代码边听歌的感觉，不用多说。但 Claude Code 一弹权限确认框，你还得手动切出去暂停——来回几次，状态就碎了。
+
+**coding-music 做的事很简单：** Claude 弹确认框时音乐自动停，你点完确认它立刻接着播。全程不用你动手，注意力不用断。
 
 [English](./README.md)
 
-## 环境依赖
+---
 
-- **ncm-cli** — `npm install -g @music163/ncm-cli`（[npm](https://www.npmjs.com/package/@music163/ncm-cli)）
-- [mpv](https://mpv.io) — 播放器（`brew install mpv`）
-- [jq](https://jqlang.github.io/jq/) — JSON 处理工具（`brew install jq`）
-- Python 3.8+
-- Node.js >= 18
+## 这就是你的状态
+
+打开终端，说句 `coding-music`，红心歌单开始播。写着写着 Claude 问你"允许执行这个命令吗？"——音乐自动淡出。你点完确认，下一秒它就续上。整个过程你甚至没注意到。
+
+**两个规则，你说了算：**
+
+| 规则 | 效果 | 默认 |
+|------|------|------|
+| Rule 1 | Claude 弹确认框→暂停，确认后→恢复 | ✅ 开 |
+| Rule 2 | Claude 回复完→暂停，你发下一条消息→恢复 | ❌ 关 |
+
+想用 Rule 2 就说 `开启 rule2`，不想要就说 `关闭 rule2`。Rule 2 比较适合那种"Claude 回完我要仔细看"的场景。
+
+---
+
+## 快速上手
+
+装好了就说这句话：
+
+| 说 | 发生什么 |
+|----|---------|
+| `coding-music` | 红心歌单开播，自动暂停/恢复激活 |
+| `停止 coding-music` | 停播，hook 关掉 |
+| `开启 rule2` / `关闭 rule2` | 切换 Rule 2 |
+| `查看伴奏状态` | 看一眼当前配置和播放状态 |
+
+---
+
+## 怎么做到自动暂停/恢复？
+
+```
+Claude 弹出权限确认框
+    → PermissionRequest hook 触发 → 暂停音乐
+你点了确认
+    → PostToolUse hook 触发 → 立刻恢复播放
+```
+
+两条 hook 挂在 Claude Code 的 hook 系统上，轻量，不改任何 Claude Code 内部行为。
+
+---
 
 ## 安装
 
-### 第一步：获取网易云音乐开发者凭证
+### 准备工作
 
-前往[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)注册，获取 `appId` 和 `privateKey`。
+装这几个东西（都只装一次）：
 
-### 第二步：安装并配置 ncm-cli
+- [mpv](https://mpv.io) 播放器：`brew install mpv`
+- [jq](https://jqlang.github.io/jq/) JSON 处理：`brew install jq`
+- Python 3.8+
+- Node.js >= 18
+
+### 1. 拿到网易云音乐开发者凭证
+
+去[网易云音乐开放平台](https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL)注册，拿到你的 `appId` 和 `privateKey`。
+
+### 2. 装好 ncm-cli 并登录
 
 ```bash
 npm install -g @music163/ncm-cli
 ncm-cli configure   # 输入 appId 和 privateKey
-ncm-cli login       # 授权账号
+ncm-cli login       # 授权你的网易云账号
 ```
 
-ncm-cli 的详细使用说明见 [NetEase/skills](https://github.com/NetEase/skills)。
+详细的 ncm-cli 用法见 [NetEase/skills](https://github.com/NetEase/skills)。
 
-### 第三步：安装 coding-music
+### 3. 安装 coding-music
 
 ```bash
 git clone https://github.com/KKL08/Skill.git
@@ -36,49 +82,20 @@ cd Skill/coding-music
 bash scripts/install.sh
 ```
 
-`install.sh` 会自动完成以下操作：
-- 将 hook 脚本复制到 `~/.claude/hooks/coding-music/`
-- 将 `SKILL.md` 安装到 `~/.claude/skills/coding-music/`
-- 在 `~/.claude/settings.json` 中注册所有 hook
-- 创建默认配置文件和状态文件
+`install.sh` 会帮你把一切就位，不用手动搬文件：
 
-安装完成后重启 Claude Code 即可生效。
+- hook 脚本 → `~/.claude/hooks/coding-music/`
+- `SKILL.md` → `~/.claude/skills/coding-music/`
+- 在 `~/.claude/settings.json` 里注册所有 hook
+- 创建默认的配置文件、状态文件
 
-## 使用方式
+装完重启 Claude Code，就能用了。
 
-| 说这句话 | 效果 |
-|----------|------|
-| `coding-music` | 开始播放红心歌曲，激活自动暂停/恢复 |
-| `停止 coding-music` | 停止播放，禁用 hook |
-| `开启 rule2` | Claude 回复完毕时也暂停 |
-| `关闭 rule2` | 关闭 rule2 |
-| `查看伴奏状态` | 查看当前配置和播放状态 |
+---
 
-## 工作原理
+## 配置和日志
 
-```
-权限确认框出现
-    → PermissionRequest hook → 暂停音乐
-用户点击确认
-    → PostToolUse hook → 立即恢复播放
-```
-
-两条规则：
-
-- **Rule 1**（默认开启）：权限弹窗时暂停，确认后恢复
-- **Rule 2**（可选开启）：Claude 回复完毕时暂停，你发下一条消息时恢复
-
-## 卸载
-
-```bash
-bash scripts/uninstall.sh
-```
-
-会移除 hook 脚本、SKILL.md，并清理 `settings.json` 中的所有 hook 注册。
-
-## 配置
-
-`~/.claude/hooks/coding-music/config.json`：
+配置文件在 `~/.claude/hooks/coding-music/config.json`：
 
 ```json
 {
@@ -88,4 +105,18 @@ bash scripts/uninstall.sh
 }
 ```
 
-日志文件：`~/.claude/hooks/coding-music/logs/music.log`
+- `enabled`：全局开关，关掉 coding-music 就跟没装一样
+- `rule2_enabled`：对应上文的 Rule 2
+- `log_enabled`：开日志的话，每次暂停/恢复都有记录
+
+日志写在这里：`~/.claude/hooks/coding-music/logs/music.log`
+
+---
+
+## 不想用了？
+
+```bash
+bash scripts/uninstall.sh
+```
+
+hook 脚本、SKILL.md、settings.json 里的注册项一起清掉，干干净净。

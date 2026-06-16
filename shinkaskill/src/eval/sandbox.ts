@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const RUN_STATUSES = [
@@ -31,8 +31,8 @@ export async function createSandboxRun(input: {
   const originalDir = join(runDir, "original");
   const sandboxDir = join(runDir, "sandbox");
   await mkdir(runDir, { recursive: true });
-  await cp(input.sourceDir, originalDir, { recursive: true });
-  await cp(input.sourceDir, sandboxDir, { recursive: true });
+  await copySkillSnapshot(input.sourceDir, originalDir);
+  await copySkillSnapshot(input.sourceDir, sandboxDir);
   await writeManifest(runDir, {
     id,
     status: "created",
@@ -60,6 +60,15 @@ export function isRunStatus(value: unknown): value is RunStatus {
 
 async function writeManifest(runDir: string, manifest: Record<string, unknown>): Promise<void> {
   await writeFile(join(runDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+}
+
+async function copySkillSnapshot(sourceDir: string, targetDir: string): Promise<void> {
+  await mkdir(targetDir, { recursive: true });
+  const entries = await readdir(sourceDir);
+  for (const entry of entries) {
+    if (entry === ".shinka") continue;
+    await cp(join(sourceDir, entry), join(targetDir, entry), { recursive: true });
+  }
 }
 
 function slug(value: string): string {

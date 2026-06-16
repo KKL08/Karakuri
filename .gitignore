@@ -11,3 +11,6 @@ skill-triage/docs/
 shinkaskill/tests/
 shinkaskill/docs/
 shinkaskill/vitest.config.ts
+
+# uv 就地虚拟环境（violet-refine 等带 CLI 的 skill）
+.venv/
