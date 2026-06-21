@@ -1,4 +1,0 @@
-- This repository uses pnpm for frontend work.
-- User prefers uv for Python projects.
-- Need debug.
-- Project has files.

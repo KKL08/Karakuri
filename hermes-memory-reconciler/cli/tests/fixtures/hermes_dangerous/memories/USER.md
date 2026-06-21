@@ -1,1 +1,0 @@
-- User prefers concise answers.

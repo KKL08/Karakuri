@@ -38,7 +38,7 @@ v1 支持两种"当前运行环境"流程：
 从这个仓库复制 skill 文件夹：
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 
 # Codex
 mkdir -p ~/.codex/skills

@@ -1,10 +1,10 @@
-# AI Agent Skills
+# Karakuri
 
 [中文版](./README.md)
 
-A collection of AI Agent skills for Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtimes.
+Karakuri (からくり) — the ingenious mechanical automata of Edo-period Japan: small, self-contained, wind them up and they go. Each skill here works the same way: drop it into your agent and it runs.
 
-Each skill is a self-contained folder. `SKILL.md` holds the core instructions; references, templates, and scripts live alongside it. Drop a skill into your agent's skill directory and it works out of the box — no per-task setup needed. Skills are runtime-agnostic unless noted otherwise.
+For Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtimes. Each skill is a self-contained folder — `SKILL.md` holds the core instructions; references, templates, and scripts live alongside it. Runtime-agnostic unless noted otherwise.
 
 ## Available Skills
 
@@ -12,23 +12,21 @@ Each skill is a self-contained folder. `SKILL.md` holds the core instructions; r
 |-------|----------|--------------|
 | [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
 | [coding-agent-fit](./coding-agent-fit) | Any coding agent | Scores how well a cloud service or dev tool supports Coding Agent integration |
-| [gen-image-grounding](./gen-image-grounding) | Any generation agent | Searches for facts and visual references before image generation |
-| [hermes-memory-reconciler](./hermes-memory-reconciler) | Hermes Agent | Finds duplicates, conflicts, stale entries, and risky instructions in long-term memory |
 | [shinkaskill](./shinkaskill) | Codex / Claude Code | Quality-checks a single skill's structure, trigger description, and eval results |
 | [skill-triage](./skill-triage) | Codex / Claude Code | Finds duplicates and unclear boundaries across an installed skill library |
 
 ## Installation
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 
 # Claude Code
 mkdir -p ~/.claude/skills
-cp -r Skill/<skill-name> ~/.claude/skills/
+cp -r Karakuri/<skill-name> ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
-cp -r Skill/<skill-name> ~/.codex/skills/
+cp -r Karakuri/<skill-name> ~/.codex/skills/
 ```
 
 For Hermes, OpenClaw, or other runtimes, copy the folder to the runtime's skill/plugin directory or import it as a Markdown instruction pack. Keep `agents/<runtime>.yaml`, `references/`, and `scripts/` together with `SKILL.md`.
@@ -61,32 +59,6 @@ Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agen
 
 ```
 /coding-agent-fit https://resend.com/docs
-```
-
----
-
-### Gen Image Grounding `0.1 beta`
-
-For prompts involving real people, places, products, logos, or anything that needs factual accuracy — searches the web and image sources first, then hands structured results to the image model.
-
-Outputs `gen_prompt`, `reference_images`, `facts`, `sources`, and `warnings`. Supports Serper, Volcengine, Tavily, Firecrawl, and Jina. Requires Python 3; runs in plan-only mode without API keys.
-
-See [gen-image-grounding/README.md](./gen-image-grounding/README.md) for provider setup and output format.
-
-```
-/gen-image-grounding
-```
-
----
-
-### Hermes Memory Reconciler `0.2 beta`
-
-Long-term memory gets messy: preferences conflict, facts go stale, old conclusions keep steering behavior, risky instructions slip through. This skill scans Hermes `USER.md` and `MEMORY.md`, surfaces the problems, and asks targeted questions to build a cleanup proposal. Nothing changes until you say so.
-
-Reads from `${HERMES_HOME:-$HOME/.hermes}/memories/`. See [hermes-memory-reconciler/README.md](./hermes-memory-reconciler/README.md) for the full workflow and CLI commands.
-
-```
-/hermes-memory-reconciler
 ```
 
 ---

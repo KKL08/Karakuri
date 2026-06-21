@@ -77,7 +77,7 @@ ncm-cli login       # 授权你的网易云账号
 ### 3. 安装 coding-music
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 cd Skill/coding-music
 bash scripts/install.sh
 ```

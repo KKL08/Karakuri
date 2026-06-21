@@ -31,7 +31,7 @@ For more details on ncm-cli setup and usage, see [NetEase/skills](https://github
 ### 3. Install coding-music
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 cd Skill/coding-music
 bash scripts/install.sh
 ```

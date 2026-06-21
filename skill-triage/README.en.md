@@ -32,7 +32,7 @@ The same SkillTriage folder is used in both environments. Each runtime runs Skil
 From this repository:
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 
 # Codex
 mkdir -p ~/.codex/skills

@@ -22,7 +22,7 @@
 当前版本优先推荐这种安装方式，开发和试用都适用。
 
 ```bash
-git clone https://github.com/KKL08/Skill.git
+git clone https://github.com/KKL08/Karakuri.git
 cd Skill/shinkaskill
 npm install
 npm run build
