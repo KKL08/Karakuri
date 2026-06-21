@@ -12,7 +12,6 @@ For Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtim
 |-------|----------|--------------|
 | [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
 | [coding-agent-fit](./coding-agent-fit) | Any coding agent | Scores how well a cloud service or dev tool supports Coding Agent integration |
-| [shinkaskill](./shinkaskill) | Codex / Claude Code | Quality-checks a single skill's structure, trigger description, and eval results |
 | [skill-triage](./skill-triage) | Codex / Claude Code | Finds duplicates and unclear boundaries across an installed skill library |
 
 ## Installation
@@ -59,20 +58,6 @@ Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agen
 
 ```
 /coding-agent-fit https://resend.com/docs
-```
-
----
-
-### ShinkaSkill `0.1 beta`
-
-Pre-publish quality check for a single skill. Reads `SKILL.md`, referenced files, and scripts; checks structure, trigger clarity, and completeness; scores each rubric dimension with evidence. Optionally runs real eval via Codex or Claude Code subagents.
-
-Differs from skill-triage: shinkaskill looks at one skill in depth, skill-triage looks across the whole library. Requires Node.js 20+.
-
-See [shinkaskill/README.md](./shinkaskill/README.md) for installation and CLI usage.
-
-```
-/shinkaskill
 ```
 
 ---
