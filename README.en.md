@@ -60,7 +60,7 @@ Instead of letting the agent try and fail, run an assessment first:
 
 DevRel teams use it for self-checks; developers use it to evaluate platforms before committing. Weights vary by site type.
 
-Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
+See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
 
 ```
 /coding-agent-fit https://resend.com/docs
@@ -70,9 +70,19 @@ Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agen
 
 ### Skill Triage: Sibyl Scope `0.1`
 
-Once you have dozens of skills installed, the agent's pick-the-right-skill accuracy drops noticeably — two skills with similar descriptions, a description over-promising what the body can do, a body able to do more than the description advertises. Sibyl Scope scans the current runtime's skill library and 30-day local usage frequency, diagnoses five classes (positioning overlap / trigger boundary overlap / boundary inflation / boundary deflation / positioning unclear), and lets the user choose archive / rewrite / keep / defer per item. Every executed action is reversible. Named after the Sibyl System in *PSYCHO-PASS* — a scanner that scores potential threat levels; we score skill description quality.
+The more skills you install, the worse the agent gets at picking the right one.
 
-Requires Python 3 stdlib + system git. No third-party packages. See [skill-triage-sibyl/README.md](./skill-triage-sibyl/README.md).
+You ask it to "send an email" and it grabs a skill that can only search mail. You ask it to "tidy up my notes" and two skills have near-identical descriptions, so it flips a coin. Worse, some skills can do five things but their description only mentions one — the agent never sees the rest.
+
+The problem is in the descriptions themselves, but checking dozens by hand isn't realistic. Sibyl Scope does it for you:
+
+- 🔍 **Scan** → lists every skill, counts 30-day call frequency, surfaces long-idle ones
+- 🩺 **Diagnose** → checks five classes per item: similar descriptions, overlapping triggers, description too broad, description too narrow, positioning unclear
+- ✅ **Act** → lets you choose archive / rewrite / keep / defer per item, executes on confirmation, every action reversible
+
+Named after the Sibyl System in *PSYCHO-PASS* — it scores citizens' threat levels for tiered handling; this one scores skill descriptions for cleanup. The difference: you decide.
+
+See [skill-triage-sibyl/README.md](./skill-triage-sibyl/README.md).
 
 ```
 use skill-triage-sibyl
