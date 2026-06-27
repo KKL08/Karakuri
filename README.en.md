@@ -12,7 +12,7 @@ For Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtim
 |-------|----------|--------------|
 | [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
 | [coding-agent-fit](./coding-agent-fit) | Any coding agent | Check if a service is agent-friendly before you try to integrate it |
-| [skill-triage](./skill-triage) | Codex / Claude Code | Finds duplicates and unclear boundaries across an installed skill library |
+| [skill-triage-sibyl](./skill-triage-sibyl) | Claude Code / Codex | Audits the current agent's skill library — finds overlapping descriptions, inflated/deflated boundaries, and usage stats, with reversible cleanup |
 
 ## Installation
 
@@ -68,14 +68,13 @@ Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agen
 
 ---
 
-### SkillTriage `0.3 beta`
+### Skill Triage: Sibyl Scope `0.1`
 
-As you install more skills over time, some end up with overlapping descriptions or unclear boundaries — the agent hesitates when picking which one to call.
+Once you have dozens of skills installed, the agent's pick-the-right-skill accuracy drops noticeably — two skills with similar descriptions, a description over-promising what the body can do, a body able to do more than the description advertises. Sibyl Scope scans the current runtime's skill library and 30-day local usage frequency, diagnoses five classes (positioning overlap / trigger boundary overlap / boundary inflation / boundary deflation / positioning unclear), and lets the user choose archive / rewrite / keep / defer per item. Every executed action is reversible. Named after the Sibyl System in *PSYCHO-PASS* — a scanner that scores potential threat levels; we score skill description quality.
 
-Scans the current agent's skill library, separates true duplicates from similar-but-distinct skills, and flags descriptions that are too broad. Reports only by default; cleanup requires explicit confirmation. Supports preference memory so future reports better match your habits.
-
-Requires Python 3 standard library. See [skill-triage/README.md](./skill-triage/README.md) for usage and output format.
+Requires Python 3 stdlib + system git. No third-party packages. See [skill-triage-sibyl/README.md](./skill-triage-sibyl/README.md).
 
 ```
-/skill-triage
+use skill-triage-sibyl
 ```
+
