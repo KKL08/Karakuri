@@ -60,7 +60,7 @@ Instead of letting the agent try and fail, run an assessment first:
 
 DevRel teams use it for self-checks; developers use it to evaluate platforms before committing. Weights vary by site type.
 
-Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
+See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
 
 ```
 /coding-agent-fit https://resend.com/docs
