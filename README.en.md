@@ -11,7 +11,7 @@ For Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtim
 | Skill | Best For | What It Does |
 |-------|----------|--------------|
 | [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
-| [coding-agent-fit](./coding-agent-fit) | Any coding agent | Scores how well a cloud service or dev tool supports Coding Agent integration |
+| [coding-agent-fit](./coding-agent-fit) | Any coding agent | Check if a service is agent-friendly before you try to integrate it |
 | [skill-triage](./skill-triage) | Codex / Claude Code | Finds duplicates and unclear boundaries across an installed skill library |
 
 ## Installation
@@ -50,11 +50,17 @@ Requires [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), `mpv`, Pyth
 
 ### Coding Agent Fit
 
-Give it a docs URL for any cloud service or developer tool. It returns an integration report: how smoothly a Coding Agent can get from docs to working code, where it's likely to get stuck, and what the service should fix first.
+You're about to hand a service integration to your coding agent. But will it actually work? Can the agent find the docs, read the API ref, grab credentials, and write working code — or will it get stuck halfway through some auth flow?
 
-Scores 5 dimensions: service discovery, docs quality, agent tooling (CLI/MCP/Skill), integration friction, and maintenance signals. Useful for DevRel teams running self-checks and for agent developers evaluating platforms.
+Instead of letting the agent try and fail, run an assessment first:
 
-Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for scoring details.
+- 🔍 **Probe** → auto-scans for llms.txt, OpenAPI, MCP, CLI, SDK, and other agent-friendly entry points
+- 🏃 **Dry-run** → picks an integration path and walks through it step by step
+- 📊 **Report** → scores 5 dimensions, shows what's strong, what's blocking, and what to fix first
+
+DevRel teams use it for self-checks; developers use it to evaluate platforms before committing. Weights vary by site type.
+
+Requires Python 3 (probe script). See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
 
 ```
 /coding-agent-fit https://resend.com/docs

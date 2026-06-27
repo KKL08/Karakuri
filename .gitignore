@@ -14,3 +14,6 @@ shinkaskill/vitest.config.ts
 
 # uv 就地虚拟环境（violet-refine 等带 CLI 的 skill）
 .venv/
+
+# 评测样例报告（本地参照，不推远程）
+coding-agent-fit/evals/*-sample-report.md
