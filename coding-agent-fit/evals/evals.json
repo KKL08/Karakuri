@@ -1,46 +1,69 @@
 {
   "skill_name": "coding-agent-fit",
+  "_note": "expected_score_range 为 rubric v5 上线后暂定值，需实际跑回归后钉准。expected_confidence 反映静态评分能拿到的证据强度，dry_run 跑通后可上一档。",
   "evals": [
     {
       "id": 1,
       "prompt": "帮我评测一下 Resend 适不适合交给 Coding Agent 接入 https://resend.com/docs",
-      "expected_output": "应给出高分（通常 A 或 S）。必须说明 Resend 在服务入口、接入文档质量和 Agent 辅助工具上较强：有清晰 docs 入口、llms.txt/llms-full.txt、AI onboarding、OpenAPI、SDK/示例、MCP 或 Skill 等 agent 相关支持。报告要复盘从发现入口到跑通邮件发送 API 的接入路径，并指出是否仍需人工拿 API key、配置域名或处理权限。最该先改的 3 件事必须包含可执行修复提示。",
+      "expected_output": "应识别 Resend 同时投入文档质量、SDK、CLI、MCP（按 fetch 验证为准）。报告应说明从发现入口到跑通邮件发送的接入路径，并指出仍需人工拿 API key 和域名验证。最该先改的 3 件事必须包含可执行修复提示。阶段 4.5 实跑应优先尝试 REST 或 SDK，发送邮件前必须征得用户同意并优先使用测试域。",
+      "expected_score_range": [80, 95],
+      "expected_confidence": "高",
       "files": []
     },
     {
       "id": 2,
       "prompt": "我想看看 Supabase 这个服务适不适合让 Claude Code / Cursor 接入项目 https://supabase.com/docs",
-      "expected_output": "应给出中高分（通常 B 或 A）。必须区分：Supabase 的 SDK、CLI、quickstart、Cursor rules/MCP 等 Agent 辅助工具较强；但 API surface 很大，agent 仍可能在鉴权、RLS、数据库迁移、产品边界和版本差异处需要人工判断。报告应把 CLI 放在 Agent 辅助工具和接入阻碍里讨论，不能把 CLI 当成独立维度或 API 文档替代品。",
+      "expected_output": "应识别 Supabase 的 SDK、CLI、quickstart、Agent 配置等辅助工具（按 fetch 验证为准）。报告应承认 API surface 大、Agent 在鉴权 / RLS / 数据库迁移 / 产品边界 / 版本差异处仍需人工判断。CLI 放在 Agent 辅助工具维度评分，不能当 API 文档替代品。",
+      "expected_score_range": [65, 85],
+      "expected_confidence": "中",
       "files": []
     },
     {
       "id": 3,
       "prompt": "评测腾讯 TRTC 对 Coding Agent 接入的支持程度 https://trtc.io/document",
-      "expected_output": "应给出中等或偏低分（通常 C 或 B，取决于最新证据）。必须检查是否有 llms.txt、MCP、Skill、API reference、SDK 示例、错误码、套餐/地区/权限限制。若发现近期新增 MCP Server 或 AI Skills，应计入 Agent 辅助工具，但不能因此掩盖 llms/Markdown、OpenAPI/API Catalog、示例质量、限流/错误/版本说明等缺口。必须指出 Agent 最可能卡住的一步。",
+      "expected_output": "应按 fetch 验证检查 llms.txt、MCP、Skill、API reference、SDK 示例、错误码、套餐/地区/权限限制。如发现近期新增的 Agent 辅助资源，应计入维度 3，但不能掩盖 llms / Markdown、OpenAPI、示例质量、限流/错误/版本说明等缺口。必须指出 Agent 最可能卡住的一步。",
+      "expected_score_range": [45, 70],
+      "expected_confidence": "中",
       "files": []
     },
     {
       "id": 4,
       "prompt": "评测 MiniMax 开发平台是否适合被 Coding Agent 接入 https://platform.minimaxi.com/docs/guides/models-intro",
-      "expected_output": "必须识别 https://platform.minimaxi.com/docs/llms.txt 和 /docs/llms-full.txt 存在，不能因为根路径 /llms.txt 404 就判定 llms 缺失。必须按新 rubric 输出 5 个维度：服务入口与发现、接入文档质量、Agent 辅助工具、接入阻碍与风险、维护与反馈机制。应讨论 MiniMax CLI、MCP、Claude Code/Cursor/Codex 等配置能帮 Agent 省掉哪些查找和配置步骤，同时检查 OpenAPI/API reference、鉴权、错误码、限流和版本信息是否足够。",
+      "expected_output": "必须识别 https://platform.minimaxi.com/docs/llms.txt 和 /docs/llms-full.txt 存在，不能因为根路径 /llms.txt 404 就判定 llms 缺失。按 rubric v5 给 5 个维度。讨论 CLI / MCP / 各 Agent runtime 配置能省哪些步骤，同时检查 OpenAPI / API reference / 鉴权 / 错误码 / 限流 / 版本说明是否足够。",
+      "expected_score_range": [55, 80],
+      "expected_confidence": "中",
       "files": []
     },
     {
       "id": 5,
       "prompt": "这个 API 平台网页很漂亮，但我想知道能不能放心交给 Codex 接入。请按 Coding Agent 接入评测。",
-      "expected_output": "如果没有具体 URL，应先要求用户提供目标网站或 docs URL，不能凭空评分。若用户随后提供的是只有营销页、没有 API reference/鉴权/SDK/错误码/限流的站点，应在接入文档质量和接入阻碍与风险上重扣。页面设计好或宣传 AI-friendly 不构成高分证据。",
+      "expected_output": "没有具体 URL 时应先要求用户提供目标网站，不凭空评分。如用户随后提供的是只有营销页、无 API reference/鉴权/SDK/错误码/限流的站点，应在维度 2 和维度 4 重扣。页面设计好或宣传 AI-friendly 不构成高分证据。",
+      "expected_score_range": null,
+      "expected_confidence": "N/A",
       "files": []
     },
     {
       "id": 6,
       "prompt": "评测一个主要通过 CLI 使用的开发者工具是否适合 Coding Agent 使用。",
-      "expected_output": "如果目标属于开发者工具，应合理使用 N/A。缺 OpenAPI 不能机械扣到低分。必须把 CLI 文档质量、非交互模式、结构化输出、退出码、doctor/verify 命令、安装方式、版本发布和错误诊断作为关键证据。没有 MCP 但 CLI 足够稳定时，不应重扣。",
+      "expected_output": "应识别为开发者工具类型并采用开发者工具权重表（工具 30%）。缺 OpenAPI 不机械扣到低分。把 CLI 文档质量、非交互模式、结构化输出、退出码、doctor/verify、安装方式、版本发布、错误诊断作为关键证据。没 MCP 但 CLI 稳定时，维度 3 仍可拿 4-5 档。",
+      "expected_score_range": [60, 85],
+      "expected_confidence": "中",
       "files": []
     },
     {
       "id": 7,
       "prompt": "评测一个云服务厂商给的 Claude/Codex skill 是否真的能帮助接入。",
-      "expected_output": "必须把 Skill 放入 Agent 辅助工具维度，不能只检查 CLI/MCP。应检查 skill 是否有明确触发说明、适用任务、配置方式、需要的权限、示例、验证方式，以及是否能引导 Agent 使用官方 API/SDK 文档。只有 prompt 文案、没有真实配置或验证路径时，本维度最高 3 分。",
+      "expected_output": "把 Skill 放入维度 3，检查 skill 触发说明、适用任务、配置方式、权限、示例、验证方式，以及是否引导 Agent 使用官方 API/SDK 文档。只有 prompt 文案、无真实配置或验证路径时维度 3 档 ≤ 3。Skill 不能替代 API ref / 鉴权 / 错误码，维度 2 仍按云服务标准评。",
+      "expected_score_range": [50, 80],
+      "expected_confidence": "中",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "评测一个 quickstart 示例全部跑不通的 API 平台（dry_run 失败案例）。",
+      "expected_output": "阶段 4.5 实跑必须卡在'写调用'或'实跑'步骤；维度 4 的'示例可跑'分级取 3 分，'错误信息不可诊断'按实际取 0/1.5/3 分。报告'最可能卡住的一步'必须引用 dry_run 实际失败位置，不能用静态推断替代。Agent 接入把握必须降到'低'，即使 llms.txt / MCP 都齐全也不能提到中。",
+      "expected_score_range": [30, 55],
+      "expected_confidence": "高",
       "files": []
     }
   ]
