@@ -10,9 +10,9 @@ For Claude Code, Codex, Hermes, OpenClaw, and other general-purpose agent runtim
 
 | Skill | Best For | What It Does |
 |-------|----------|--------------|
-| [coding-music](./coding-music) | Claude Code | Plays music while you code; auto-pauses on permission prompts, resumes after you confirm |
-| [coding-agent-fit](./coding-agent-fit) | Any coding agent | Check if a service is agent-friendly before you try to integrate it |
-| [skill-triage-sibyl](./skill-triage-sibyl) | Claude Code / Codex | Audits the current agent's skill library — finds overlapping descriptions, inflated/deflated boundaries, and usage stats, with reversible cleanup |
+| [coding-music](./coding-music) | Claude Code | Plays music while Claude Code works; auto-pauses on permission prompts and task completion, resumes after you confirm — keeps your attention where it matters |
+| [coding-agent-fit](./coding-agent-fit) | Any coding agent | When you want to integrate a new product or service via a coding agent, this evaluates how agent-friendly it is and gives you a decision reference |
+| [skill-triage-sibyl](./skill-triage-sibyl) | Claude Code / Codex | Too many skills and the agent starts picking the wrong one — scans for overlapping positioning, inaccurate descriptions, and idle skills, then walks you through cleanup |
 
 ## Installation
 
@@ -50,7 +50,7 @@ Requires [ncm-cli](https://www.npmjs.com/package/@music163/ncm-cli), `mpv`, Pyth
 
 ### Coding Agent Fit
 
-You're about to hand a service integration to your coding agent. But will it actually work? Can the agent find the docs, read the API ref, grab credentials, and write working code — or will it get stuck halfway through some auth flow?
+You're about to have a coding agent like Claude Code or Codex integrate a new product or service. But is the product agent-friendly? Can the agent find the docs, read the API ref, grab credentials, and write working code — or will it get stuck halfway through some auth flow?
 
 Instead of letting the agent try and fail, run an assessment first:
 
@@ -58,7 +58,7 @@ Instead of letting the agent try and fail, run an assessment first:
 - 🏃 **Dry-run** → picks an integration path and walks through it step by step
 - 📊 **Report** → scores 5 dimensions, shows what's strong, what's blocking, and what to fix first
 
-DevRel teams use it for self-checks; developers use it to evaluate platforms before committing. Weights vary by site type.
+Coding agent users can run it as a pre-integration assessment; product and service providers can use it to self-check their agent-friendliness. Weights vary by site type.
 
 See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
 
@@ -72,9 +72,9 @@ See [coding-agent-fit/README.md](./coding-agent-fit/README.md) for details.
 
 The more skills you install, the worse the agent gets at picking the right one.
 
-You ask it to "send an email" and it grabs a skill that can only search mail. You ask it to "tidy up my notes" and two skills have near-identical descriptions, so it flips a coin. Worse, some skills can do five things but their description only mentions one — the agent never sees the rest.
+You ask it to "send an email" and it grabs a skill that can only search mail. You ask it to "tidy up my notes" and two skills have near-identical descriptions, so it flips a coin. Worse, some skills claim coverage that doesn't match what the SKILL.md body actually delivers — overpromising or underselling.
 
-The problem is in the descriptions themselves, but checking dozens by hand isn't realistic. Sibyl Scope does it for you:
+The problem is in the descriptions themselves — the description is the key signal an agent uses to decide whether to invoke a skill, so its quality is critical. But checking dozens by hand isn't realistic. Sibyl Scope does it for you:
 
 - 🔍 **Scan** → lists every skill, counts 30-day call frequency, surfaces long-idle ones
 - 🩺 **Diagnose** → checks five classes per item: similar descriptions, overlapping triggers, description too broad, description too narrow, positioning unclear
