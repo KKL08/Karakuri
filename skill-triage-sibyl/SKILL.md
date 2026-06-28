@@ -53,7 +53,7 @@ PYTHONPATH=$SKILL_ROOT/scripts python3 -m sibyl.usage --runtime $RUNTIME --inven
 
 ### Step 4 · Agent 诊断（两层筛选）
 
-诊断分两层做：第一层粗扫挑候选，第二层精读做判断。两层都是你（agent）来做，区别在深度。这样既不浪费 token 给每对 skill 都做深入分析（91 个 skill 两两就 4000+ 对），也避免一轮粗筛下结论的偏见。
+诊断分两层做：第一层粗扫挑候选，第二层精读做判断。两层都是你（agent）来做，区别在深度。粗扫先筛掉无关组合省 token，精读再对候选做判断，避免一轮粗筛下结论的偏见。
 
 读 `references/diagnosis-rubric.md` 拿到五类问题的判定细则。
 
@@ -61,12 +61,12 @@ PYTHONPATH=$SKILL_ROOT/scripts python3 -m sibyl.usage --runtime $RUNTIME --inven
 
 把 `inventory.json` 里所有 skill 的 description 全文摆进 context，按以下三个维度做 mental 分组：
 
-- **服务对象**（飞书 / 本地文件 / 网络 / 代码仓库 / 媒体 / ...）
-- **主要动词**（管理 / 生成 / 搜索 / 改写 / 体检 / ...）
-- **触发场景**（用户在什么情景下会自然想到它）
+- **服务对象**（代码托管 / 云基础设施 / CI·CD / 数据库 / SaaS 办公 / 通讯 / 项目管理 / CRM / 设计工具 / 电商与支付 / 可观测性 / 文档与知识库 / 本地文件 / ...）
+- **主要功能**（生成 / 审查 / 测试 / 部署 / 监控 / 搜索 / 同步 / 通知 / 文档处理 / 安全扫描 / 多 agent 编排 / 规划 / 审批 / ...）
+- **触发场景**（用户在什么情景下会自然想到它：推上线 / 查 bug / 安全审计 / 写周报 / 调研竞品 / 数据可视化 / 管工单 / 发消息 / 搭页面 / 串流程 / 跑测试 / ...）
 
 输出候选清单：
-- 哪几组 skill 落在同一「服务对象 + 主要动词」语义簇（potential positioning_overlap）
+- 哪几组 skill 落在同一「服务对象 + 主要功能」语义簇（potential positioning_overlap）
 - 哪几对触发场景词显著相交（potential trigger_boundary_overlap）
 - 哪些 description < 60 字或全是宽泛词（potential positioning_unclear）
 - 哪些 description 用「manages all / supports many / handles various」这类大词（potential boundary_inflation）
